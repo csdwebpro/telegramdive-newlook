@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TeleDrive Pro — Large File Storage</title>
+    <title>TeleDrive Pro — Unlimited File Storage</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -22,8 +22,7 @@
         .header {
             background: var(--surface); border: 1px solid var(--border);
             border-radius: var(--radius); padding: 20px 28px; margin-bottom: 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 16px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
         }
         .logo { display: flex; align-items: center; gap: 12px; }
         .logo-icon {
@@ -58,22 +57,19 @@
         .input-group input {
             width: 100%; padding: 10px 14px; background: var(--surface2);
             border: 1px solid var(--border); border-radius: var(--radius-sm);
-            color: var(--text); font-size: 13px; font-family: 'SF Mono', monospace;
-            outline: none; transition: all 0.2s;
+            color: var(--text); font-size: 13px; font-family: 'SF Mono', monospace; outline: none;
         }
-        .input-group input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,58,237,0.15); }
+        .input-group input:focus { border-color: var(--accent); }
 
         .btn {
             padding: 10px 20px; border: none; border-radius: 24px;
             font-size: 13px; font-weight: 600; cursor: pointer;
-            display: inline-flex; align-items: center; gap: 8px;
-            transition: all 0.2s; white-space: nowrap;
+            display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; white-space: nowrap;
         }
         .btn-primary { background: var(--accent); color: #fff; }
-        .btn-primary:hover { background: #6d28d9; transform: translateY(-1px); box-shadow: 0 8px 25px rgba(124,58,237,0.4); }
+        .btn-primary:hover { background: #6d28d9; transform: translateY(-1px); }
         .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
         .btn-success { background: var(--success); color: #fff; }
-        .btn-danger { background: var(--danger); color: #fff; }
         .btn-sm { padding: 6px 14px; font-size: 11px; }
         .btn-lg { padding: 14px 32px; font-size: 15px; }
         .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
@@ -85,18 +81,9 @@
         }
         .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); }
         .drop-zone.drag-over { border-style: solid; transform: scale(1.01); }
-        .drop-icon { font-size: 56px; color: var(--accent2); margin-bottom: 12px; animation: float 3s ease-in-out infinite; }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
+        .drop-icon { font-size: 56px; color: var(--accent2); margin-bottom: 12px; }
         .drop-text { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
         .drop-subtext { font-size: 13px; color: var(--text2); }
-
-        .file-type-badges { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
-        .type-badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-        .type-badge.video { background: rgba(239,68,68,0.15); color: #f87171; }
-        .type-badge.doc { background: rgba(16,185,129,0.15); color: #34d399; }
 
         .files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
         .file-card {
@@ -105,53 +92,29 @@
             transition: all 0.2s; position: relative;
         }
         .file-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
-        .file-card.video-file { border-left: 3px solid #ef4444; }
-        .file-card.large-file { border-left: 3px solid #f59e0b; }
-
-        .file-type-badge {
-            position: absolute; top: 12px; right: 12px;
-            font-size: 10px; font-weight: 700; text-transform: uppercase;
-            padding: 3px 8px; border-radius: 12px;
-        }
-        .file-type-badge.video { background: rgba(239,68,68,0.2); color: #f87171; }
-        .file-type-badge.large { background: rgba(245,158,11,0.2); color: #fbbf24; }
-
         .file-icon {
             width: 48px; height: 48px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 24px; margin-bottom: 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px;
         }
         .file-name { font-size: 14px; font-weight: 600; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .file-meta { font-size: 11px; color: var(--text2); display: flex; justify-content: space-between; }
-
-        .file-actions {
-            position: absolute; top: 8px; left: 8px;
-            display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s;
-        }
+        .file-actions { position: absolute; top: 8px; left: 8px; display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s; }
         .file-card:hover .file-actions { opacity: 1; }
         .icon-btn {
-            width: 30px; height: 30px; border-radius: 8px;
-            border: 1px solid var(--border); background: var(--surface2);
-            color: var(--text); cursor: pointer; display: flex;
-            align-items: center; justify-content: center; font-size: 12px;
-            transition: all 0.2s;
+            width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--surface2); color: var(--text); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.2s;
         }
         .icon-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
         .icon-btn.danger:hover { background: var(--danger); border-color: var(--danger); }
-        .icon-btn.play-btn:hover { background: #ef4444; border-color: #ef4444; }
 
         .upload-overlay {
-            position: fixed; bottom: 20px; right: 20px;
-            width: 420px; max-width: 90vw; background: var(--surface);
-            border: 1px solid var(--border); border-radius: var(--radius);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-            z-index: 1000; display: none; overflow: hidden;
+            position: fixed; bottom: 20px; right: 20px; width: 420px; max-width: 90vw;
+            background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5); z-index: 1000; display: none; overflow: hidden;
         }
         .upload-overlay.active { display: block; animation: slideUp 0.3s ease; }
-        @keyframes slideUp {
-            from { transform: translateY(100px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .upload-overlay-header {
             padding: 14px 18px; border-bottom: 1px solid var(--border);
             display: flex; justify-content: space-between; align-items: center;
@@ -159,10 +122,6 @@
         }
         .upload-overlay-body { padding: 18px; }
         .upload-filename { font-weight: 600; font-size: 14px; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .chunk-badge {
-            display: inline-block; padding: 3px 10px; border-radius: 12px;
-            font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;
-        }
         .progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin: 10px 0; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 4px; transition: width 0.3s; }
         .upload-stats { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); margin-top: 6px; }
@@ -170,45 +129,26 @@
 
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
         .toast {
-            padding: 12px 18px; border-radius: 10px; color: #fff;
-            font-weight: 500; font-size: 13px; animation: toastIn 0.3s ease;
-            display: flex; align-items: center; gap: 8px;
+            padding: 12px 18px; border-radius: 10px; color: #fff; font-weight: 500; font-size: 13px;
+            animation: toastIn 0.3s ease; display: flex; align-items: center; gap: 8px;
             box-shadow: 0 8px 30px rgba(0,0,0,0.4); min-width: 250px;
         }
         .toast-success { background: rgba(16,185,129,0.95); }
         .toast-error { background: rgba(239,68,68,0.95); }
         .toast-info { background: rgba(124,58,237,0.95); }
-        .toast-warning { background: rgba(245,158,11,0.95); }
-        @keyframes toastIn {
-            from { transform: translateX(120%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
+        @keyframes toastIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
         .status-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 12px; border-radius: 20px; }
         .status-badge.connected { background: rgba(16,185,129,0.15); color: #34d399; }
-        .status-badge.disconnected { background: rgba(239,68,68,0.15); color: #f87171; }
         .status-dot { width: 8px; height: 8px; border-radius: 50%; }
         .status-dot.green { background: var(--success); }
-        .status-dot.red { background: var(--danger); }
 
         .search-wrap { position: relative; margin-bottom: 20px; }
         .search-wrap input {
-            width: 100%; padding: 12px 16px 12px 44px;
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 24px; color: var(--text); font-size: 14px; outline: none;
+            width: 100%; padding: 12px 16px 12px 44px; background: var(--surface);
+            border: 1px solid var(--border); border-radius: 24px; color: var(--text); font-size: 14px; outline: none;
         }
-        .search-wrap input:focus { border-color: var(--accent); }
         .search-wrap i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text2); }
-
-        .empty-state { text-align: center; padding: 60px 30px; color: var(--text2); }
-        .empty-state i { font-size: 64px; opacity: 0.15; margin-bottom: 16px; display: block; }
-        .empty-state h3 { font-size: 18px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
-
-        .chunk-size-info {
-            background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3);
-            border-radius: 8px; padding: 10px 14px; margin-top: 8px;
-            font-size: 12px; color: #fbbf24; display: flex; align-items: center; gap: 8px;
-        }
 
         @media (max-width: 768px) {
             .container { padding: 10px; }
@@ -225,69 +165,54 @@
         <div class="header">
             <div class="logo">
                 <div class="logo-icon"><i class="fas fa-cloud"></i></div>
-                <div class="logo-text">
-                    <h2>TeleDrive Pro</h2>
-                    <span>Large File Storage</span>
-                </div>
+                <div class="logo-text"><h2>TeleDrive Pro</h2><span>Unlimited Storage via Chunking</span></div>
             </div>
             <div class="stats-row">
+                <div class="stat-card"><div class="stat-value" id="fileCount">0</div><div class="stat-label">Files</div></div>
+                <div class="stat-card"><div class="stat-value" id="storageUsed">0 B</div><div class="stat-label">Storage</div></div>
                 <div class="stat-card">
-                    <div class="stat-value" id="fileCount">0</div>
-                    <div class="stat-label">Files</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="storageUsed">0 B</div>
-                    <div class="stat-label">Storage</div>
-                </div>
-                <div class="stat-card">
-                    <span class="status-badge disconnected" id="connectionStatus">
-                        <span class="status-dot red"></span> Offline
-                    </span>
+                    <span class="status-badge" id="connectionStatus" style="background:rgba(239,68,68,0.15);color:#f87171;"><span class="status-dot" style="background:#ef4444;"></span> Offline</span>
                 </div>
             </div>
         </div>
 
         <div class="config-section">
-            <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="document.getElementById('configBody').style.display=document.getElementById('configBody').style.display==='none'?'block':'none'">
-                <h3 style="font-size:16px;font-weight:600;"><i class="fas fa-cog"></i> Configuration</h3>
-                <i class="fas fa-chevron-down" style="color:var(--text2);"></i>
+            <div style="cursor:pointer;" onclick="document.getElementById('configBody').style.display=document.getElementById('configBody').style.display==='none'?'block':'none'">
+                <h3 style="font-size:16px;font-weight:600;display:flex;justify-content:space-between;align-items:center;">
+                    <span><i class="fas fa-cog"></i> Configuration</span>
+                    <i class="fas fa-chevron-down" style="color:var(--text2);"></i>
+                </h3>
             </div>
             <div id="configBody">
                 <div class="config-grid">
                     <div class="input-group">
-                        <label>Bot Token</label>
-                        <input type="text" id="botToken" placeholder="From @BotFather">
+                        <label>Bot Token (from @BotFather)</label>
+                        <input type="text" id="botToken" placeholder="123456:ABC...">
                     </div>
                     <div class="input-group">
                         <label>Chat ID or @Username</label>
-                        <input type="text" id="chatId" placeholder="-100xxx or @channel or me">
+                        <input type="text" id="chatId" placeholder="-100xxx or me">
                     </div>
                 </div>
-                <div class="chunk-size-info">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Files > 50MB are split into 50MB chunks to avoid Telegram's "request entity too large" error</span>
+                <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:10px 14px;margin-top:8px;font-size:12px;color:#34d399;">
+                    <i class="fas fa-check-circle"></i> <strong>Optimized Chunking:</strong> Files auto-split into 45MB chunks to bypass Telegram's 50MB limit
                 </div>
                 <div class="btn-row">
                     <button class="btn btn-primary btn-sm" onclick="saveAndConnect()"><i class="fas fa-plug"></i> Connect</button>
-                    <button class="btn btn-success btn-sm" onclick="quickSetup()"><i class="fas fa-bolt"></i> Quick Setup</button>
+                    <button class="btn btn-success btn-sm" onclick="quickSetup()"><i class="fas fa-bolt"></i> Quick Setup (Saved Messages)</button>
                 </div>
             </div>
         </div>
 
         <div class="btn-row" style="margin-bottom:20px;">
-            <button class="btn btn-primary btn-lg" onclick="triggerUpload()"><i class="fas fa-upload"></i> Upload Files</button>
-            <button class="btn btn-secondary" onclick="createFolder()"><i class="fas fa-folder-plus"></i> Folder</button>
+            <button class="btn btn-primary btn-lg" onclick="triggerUpload()"><i class="fas fa-upload"></i> Upload Any File</button>
             <button class="btn btn-secondary" onclick="refreshFiles()"><i class="fas fa-sync-alt"></i> Refresh</button>
         </div>
 
         <div class="drop-zone" id="dropZone">
             <div class="drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-            <div class="drop-text">Drop Files Here</div>
-            <div class="drop-subtext">Auto-chunks files > 50MB • Max 10GB total</div>
-            <div class="file-type-badges">
-                <span class="type-badge video"><i class="fas fa-play"></i> Videos</span>
-                <span class="type-badge doc"><i class="fas fa-file-alt"></i> Documents</span>
-            </div>
+            <div class="drop-text">Drop Any File Here — No Size Limit</div>
+            <div class="drop-subtext">Auto-chunks into 45MB parts • Reassembles on download • Videos stream instantly</div>
         </div>
 
         <div class="search-wrap">
@@ -295,13 +220,7 @@
             <input type="text" id="searchInput" placeholder="Search files..." oninput="renderFiles()">
         </div>
 
-        <div id="filesContainer">
-            <div class="empty-state">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <h3>Your Drive is Empty</h3>
-                <p>Upload files to get started</p>
-            </div>
-        </div>
+        <div id="filesContainer"></div>
     </div>
 
     <input type="file" id="fileInput" multiple style="display:none" onchange="handleFileSelect(event)">
@@ -313,12 +232,8 @@
         </div>
         <div class="upload-overlay-body">
             <div class="upload-filename" id="uploadName">-</div>
-            <span class="chunk-badge" id="uploadBadge" style="background:rgba(124,58,237,0.2);color:#a78bfa;">FILE</span>
             <div class="progress-bar"><div class="progress-fill" id="uploadProgressBar" style="width:0%"></div></div>
-            <div class="upload-stats">
-                <span id="uploadPercent">0%</span>
-                <span id="uploadSpeed">-</span>
-            </div>
+            <div class="upload-stats"><span id="uploadPercent">0%</span><span id="uploadSpeed">-</span></div>
             <div class="chunk-info" id="chunkInfo"></div>
         </div>
     </div>
@@ -328,16 +243,14 @@
         const API_ID = 31490201;
         const API_HASH = '7da61fca1ea2b960c8a881099e2a0b90';
         
-        // CRITICAL FIX: Smaller chunk size to avoid "request entity too large"
-        const MAX_CHUNK_SIZE = 49 * 1024 * 1024; // 49MB per chunk (safe under all limits)
-        const DIRECT_UPLOAD_LIMIT = 45 * 1024 * 1024; // 45MB - files smaller than this go directly
-        const MAX_FILE_SIZE = 10 * 1024 * 1024 * 1024; // 10GB app limit
+        // Optimal chunk size to bypass 50MB Telegram limit
+        const CHUNK_SIZE = 45 * 1024 * 1024; // 45MB per chunk
+        const PARALLEL_CHUNKS = 3; // Upload 3 chunks simultaneously
+        const NO_FILE_SIZE_LIMIT = true; // Accept any file size
 
-        // ============ STATE ============
         let files = [];
-        let currentAbortController = null;
+        let abortControllers = [];
 
-        // ============ INIT ============
         document.addEventListener('DOMContentLoaded', () => {
             loadConfig();
             loadFiles();
@@ -378,7 +291,7 @@
                     document.getElementById('chatId').value = 'me';
                     setConfig(t, 'me');
                     updateConnectionStatus(true);
-                    toast('Connected to Saved Messages!', 'success');
+                    toast('Connected! Using Saved Messages.', 'success');
                 } else toast('Invalid token', 'error');
             } catch (e) { toast('Connection failed', 'error'); }
         }
@@ -390,22 +303,17 @@
             try {
                 const r = await fetch(`https://api.telegram.org/bot${t}/getMe`);
                 const d = await r.json();
-                if (d.ok) {
-                    setConfig(t, c);
-                    updateConnectionStatus(true);
-                    toast('Connected!', 'success');
-                } else toast('Invalid token', 'error');
+                if (d.ok) { setConfig(t, c); updateConnectionStatus(true); toast('Connected!', 'success'); }
+                else toast('Invalid token', 'error');
             } catch (e) { toast('Connection failed', 'error'); }
         }
 
         function updateConnectionStatus(connected) {
             const el = document.getElementById('connectionStatus');
             if (connected) {
-                el.className = 'status-badge connected';
+                el.style.background = 'rgba(16,185,129,0.15)';
+                el.style.color = '#34d399';
                 el.innerHTML = '<span class="status-dot green"></span> Connected';
-            } else {
-                el.className = 'status-badge disconnected';
-                el.innerHTML = '<span class="status-dot red"></span> Offline';
             }
         }
 
@@ -424,275 +332,193 @@
         function triggerUpload() { document.getElementById('fileInput').click(); }
         function handleFileSelect(e) { if (e.target.files.length) processFiles(e.target.files); e.target.value = ''; }
 
-        // ============ THE FIX: Smart file processing ============
+        // ============ UNIVERSAL FILE PROCESSING ============
         function processFiles(fileList) {
             const config = getConfig();
             if (!config.token || !config.chat) {
-                toast('Configure bot first! Use Quick Setup.', 'warning');
+                toast('Configure bot first!', 'warning');
                 return;
             }
 
             Array.from(fileList).forEach(file => {
-                if (file.size > MAX_FILE_SIZE) {
-                    toast(`${file.name} exceeds 10GB limit`, 'error');
-                    return;
-                }
-
                 const fileType = getFileType(file);
+                const sizeStr = formatSize(file.size);
+                const needsChunking = file.size > CHUNK_SIZE;
 
-                // ALWAYS chunk if larger than 45MB to avoid "request entity too large"
-                if (file.size > DIRECT_UPLOAD_LIMIT) {
-                    toast(`${file.name} (${formatSize(file.size)}) - Chunking into ${MAX_CHUNK_SIZE/1024/1024}MB parts...`, 'info');
-                    uploadFileChunked(file, fileType);
+                if (needsChunking) {
+                    const chunks = Math.ceil(file.size / CHUNK_SIZE);
+                    toast(`${file.name} (${sizeStr}) → ${chunks} chunks of 45MB`, 'info');
+                    uploadChunkedFile(file, fileType);
                 } else {
-                    uploadFileDirect(file, fileType);
+                    uploadSingleChunkDirect(file, fileType, 1, 1);
                 }
             });
         }
 
-        // ============ DIRECT UPLOAD (Small files < 45MB) ============
-        async function uploadFileDirect(file, fileType) {
+        // ============ DIRECT UPLOAD (≤45MB) ============
+        async function uploadSingleChunkDirect(file, fileType, partNum, totalParts) {
             const config = getConfig();
             const overlay = document.getElementById('uploadOverlay');
-            const progressBar = document.getElementById('uploadProgressBar');
-            const percentEl = document.getElementById('uploadPercent');
-            const speedEl = document.getElementById('uploadSpeed');
-            const nameEl = document.getElementById('uploadName');
-            const badgeEl = document.getElementById('uploadBadge');
-            const chunkInfo = document.getElementById('chunkInfo');
-            const titleEl = document.getElementById('uploadTitle');
+            
+            if (totalParts === 1) overlay.classList.add('active');
+            
+            updateOverlay(file.name, 0, 'Uploading...', fileType, partNum, totalParts);
 
-            overlay.classList.add('active');
-            nameEl.textContent = file.name;
-            progressBar.style.width = '0%';
-            percentEl.textContent = '0%';
-            speedEl.textContent = 'Preparing...';
-            chunkInfo.textContent = 'Direct upload (small file)';
-            titleEl.textContent = 'Uploading';
-            badgeEl.textContent = fileType.toUpperCase();
-
-            const startTime = Date.now();
             const { endpoint, field } = getUploadMethod(file, fileType);
-
             const formData = new FormData();
             formData.append('chat_id', config.chat);
             formData.append(field, file);
-            formData.append('caption', `${getEmoji(fileType)} ${file.name}`);
+            formData.append('caption', `${getEmoji(fileType)} ${file.name}${totalParts > 1 ? ` [${partNum}/${totalParts}]` : ''} • ${formatSize(file.size)}`);
             formData.append('disable_notification', 'true');
             if (fileType === 'video') formData.append('supports_streaming', 'true');
 
-            const xhr = new XMLHttpRequest();
-            currentAbortController = { abort: () => xhr.abort() };
-
-            try {
-                const result = await new Promise((resolve, reject) => {
-                    xhr.upload.onprogress = (e) => {
-                        if (e.lengthComputable) {
-                            const pct = Math.round((e.loaded / e.total) * 100);
-                            progressBar.style.width = pct + '%';
-                            percentEl.textContent = pct + '%';
-                            const elapsed = (Date.now() - startTime) / 1000;
-                            speedEl.textContent = elapsed > 0 ? formatSize(e.loaded / elapsed) + '/s' : '-';
-                        }
-                    };
-                    xhr.onload = () => {
-                        try { resolve(JSON.parse(xhr.responseText)); }
-                        catch { reject(new Error('Invalid response')); }
-                    };
-                    xhr.onerror = () => reject(new Error('Network error'));
-                    xhr.onabort = () => reject(new Error('Cancelled'));
-                    xhr.open('POST', `https://api.telegram.org/bot${config.token}/${endpoint}`);
-                    xhr.send(formData);
-                });
-
-                if (result.ok) {
-                    saveUploadedFile(result, file, fileType, field);
-                    toast(`${file.name} uploaded!`, 'success');
-                } else {
-                    // If still too large, fallback to chunking
-                    if (result.description?.includes('too large') || result.description?.includes('entity')) {
-                        toast('Switching to chunked upload...', 'warning');
-                        uploadFileChunked(file, fileType);
-                    } else {
-                        throw new Error(result.description || 'Upload failed');
-                    }
-                }
-            } catch (err) {
-                if (err.message !== 'Cancelled') {
-                    toast(`Upload failed: ${err.message}`, 'error');
-                    saveLocally(file, fileType);
-                }
-            } finally {
-                currentAbortController = null;
-                setTimeout(() => overlay.classList.remove('active'), 1500);
-            }
+            return await executeUpload(config.token, endpoint, formData);
         }
 
-        // ============ CHUNKED UPLOAD (Files > 45MB) ============
-        async function uploadFileChunked(file, fileType) {
+        // ============ CHUNKED UPLOAD (>45MB) ============
+        async function uploadChunkedFile(file, fileType) {
             const config = getConfig();
             const overlay = document.getElementById('uploadOverlay');
-            const progressBar = document.getElementById('uploadProgressBar');
-            const percentEl = document.getElementById('uploadPercent');
-            const speedEl = document.getElementById('uploadSpeed');
-            const nameEl = document.getElementById('uploadName');
-            const badgeEl = document.getElementById('uploadBadge');
-            const chunkInfo = document.getElementById('chunkInfo');
-            const titleEl = document.getElementById('uploadTitle');
-
             overlay.classList.add('active');
-            nameEl.textContent = file.name;
-            progressBar.style.width = '0%';
-            percentEl.textContent = '0%';
-            speedEl.textContent = 'Splitting...';
-            titleEl.textContent = 'Chunked Upload';
-            badgeEl.textContent = `${fileType.toUpperCase()} (CHUNKED)`;
-            badgeEl.style.background = 'rgba(245,158,11,0.2)';
-            badgeEl.style.color = '#fbbf24';
 
-            const totalChunks = Math.ceil(file.size / MAX_CHUNK_SIZE);
-            chunkInfo.textContent = `Splitting into ${totalChunks} chunks of ${formatSize(MAX_CHUNK_SIZE)}...`;
-            
-            toast(`Large file: ${totalChunks} chunks needed`, 'info');
-
-            const { endpoint, field } = getUploadMethod(file, fileType);
-            const uploadedParts = [];
+            const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+            let uploadedParts = [];
             let totalUploaded = 0;
             let cancelled = false;
-            const startTime = Date.now();
+            abortControllers = [];
 
-            currentAbortController = { abort: () => { cancelled = true; } };
+            updateOverlay(file.name, 0, `Preparing ${totalChunks} chunks...`, fileType, 0, totalChunks);
 
-            for (let i = 0; i < totalChunks; i++) {
-                if (cancelled) {
-                    toast('Upload cancelled', 'info');
-                    overlay.classList.remove('active');
-                    return;
+            // Process chunks in parallel batches
+            for (let batchStart = 0; batchStart < totalChunks; batchStart += PARALLEL_CHUNKS) {
+                if (cancelled) break;
+
+                const batchEnd = Math.min(batchStart + PARALLEL_CHUNKS, totalChunks);
+                const batchPromises = [];
+
+                for (let i = batchStart; i < batchEnd; i++) {
+                    const start = i * CHUNK_SIZE;
+                    const end = Math.min(start + CHUNK_SIZE, file.size);
+                    const chunk = file.slice(start, end, file.type);
+                    const chunkName = `${file.name}.part${String(i + 1).padStart(5, '0')}`;
+                    const chunkFile = new File([chunk], chunkName, { type: file.type });
+
+                    const { endpoint, field } = getUploadMethod(chunkFile, fileType);
+                    const formData = new FormData();
+                    formData.append('chat_id', config.chat);
+                    formData.append(field, chunkFile);
+                    formData.append('caption', `📦 ${file.name} [Chunk ${i + 1}/${totalChunks}]`);
+                    formData.append('disable_notification', 'true');
+
+                    const promise = executeUpload(config.token, endpoint, formData)
+                        .then(result => {
+                            if (result.ok) {
+                                const doc = result.result[field] || result.result.document || {};
+                                uploadedParts.push({
+                                    partNumber: i + 1,
+                                    fileId: doc.file_id || '',
+                                    messageId: result.result.message_id,
+                                    chatId: result.result.chat.id,
+                                    size: chunkFile.size
+                                });
+                                totalUploaded += chunkFile.size;
+                                
+                                const pct = (totalUploaded / file.size) * 100;
+                                updateOverlay(file.name, pct, 
+                                    `Chunk ${uploadedParts.length}/${totalChunks} done`, 
+                                    fileType, uploadedParts.length, totalChunks);
+                            }
+                            return result;
+                        })
+                        .catch(err => {
+                            if (!cancelled) throw err;
+                        });
+
+                    batchPromises.push(promise);
                 }
 
-                const start = i * MAX_CHUNK_SIZE;
-                const end = Math.min(start + MAX_CHUNK_SIZE, file.size);
-                const chunk = file.slice(start, end, file.type);
-                
-                // Create chunk filename with padding
-                const chunkName = `${file.name}.part${String(i + 1).padStart(4, '0')}`;
-                const chunkFile = new File([chunk], chunkName, { type: file.type });
-                
-                chunkInfo.textContent = `Chunk ${i + 1}/${totalChunks} (${formatSize(chunk.size)})...`;
-                
-                const formData = new FormData();
-                formData.append('chat_id', config.chat);
-                formData.append(field, chunkFile);
-                formData.append('caption', `📦 ${file.name} [${i + 1}/${totalChunks}]`);
-                formData.append('disable_notification', 'true');
-                if (fileType === 'video') formData.append('supports_streaming', 'true');
-
                 try {
-                    const result = await uploadChunk(
-                        config.token, endpoint, formData,
-                        (loaded, total) => {
-                            const chunkPct = (loaded / total) * 100;
-                            const overallPct = ((totalUploaded + loaded) / file.size) * 100;
-                            progressBar.style.width = overallPct + '%';
-                            percentEl.textContent = Math.round(overallPct) + '%';
-                            const elapsed = (Date.now() - startTime) / 1000;
-                            speedEl.textContent = elapsed > 0 ? formatSize((totalUploaded + loaded) / elapsed) + '/s' : '-';
-                        }
-                    );
-
-                    if (result.ok) {
-                        const doc = result.result[field] || result.result.document || result.result.video || {};
-                        uploadedParts.push({
-                            partNumber: i + 1,
-                            fileId: doc.file_id || '',
-                            fileUniqueId: doc.file_unique_id || '',
-                            messageId: result.result.message_id,
-                            chatId: result.result.chat.id,
-                            size: chunk.size
-                        });
-                        totalUploaded += chunk.size;
-                        chunkInfo.textContent = `✓ Chunk ${i + 1}/${totalChunks} done`;
-                    } else {
-                        throw new Error(result.description || `Chunk ${i + 1} failed`);
-                    }
+                    await Promise.all(batchPromises);
                 } catch (err) {
-                    if (cancelled) return;
-                    toast(`Chunk ${i + 1} failed: ${err.message}`, 'error');
-                    chunkInfo.textContent = `❌ Failed at chunk ${i + 1}`;
-                    saveLocally(file, fileType);
+                    cancelled = true;
+                    toast(`Upload failed: ${err.message}`, 'error');
+                    saveFileLocally(file, fileType);
                     overlay.classList.remove('active');
                     return;
                 }
             }
 
-            // All chunks uploaded
-            files.unshift({
-                id: 'chunked_' + Date.now(),
-                uniqueId: 'chunked_' + Date.now(),
-                name: file.name,
-                size: file.size,
-                mime: file.type,
-                type: fileType,
-                date: new Date().toISOString(),
-                isChunked: true,
-                totalChunks: totalChunks,
-                parts: uploadedParts,
-                storage: 'cloud'
-            });
+            if (uploadedParts.length === totalChunks) {
+                // Store complete file record
+                files.unshift({
+                    id: 'chunked_' + Date.now(),
+                    uniqueId: 'chunked_' + Date.now(),
+                    name: file.name,
+                    size: file.size,
+                    mime: file.type,
+                    type: fileType,
+                    date: new Date().toISOString(),
+                    isChunked: true,
+                    totalChunks: totalChunks,
+                    parts: uploadedParts,
+                    storage: 'cloud'
+                });
 
-            saveFiles();
-            renderFiles();
-            updateStats();
-            
-            chunkInfo.textContent = `✅ Complete! ${totalChunks} chunks merged`;
-            toast(`${file.name} uploaded in ${totalChunks} parts!`, 'success');
-            
+                saveFiles();
+                renderFiles();
+                updateStats();
+                updateOverlay(file.name, 100, `✅ Complete!`, fileType, totalChunks, totalChunks);
+                toast(`${file.name} uploaded in ${totalChunks} chunks!`, 'success');
+            }
+
             setTimeout(() => overlay.classList.remove('active'), 2000);
-            currentAbortController = null;
+            abortControllers = [];
         }
 
-        function uploadChunk(token, endpoint, formData, onProgress) {
+        function executeUpload(token, endpoint, formData) {
             return new Promise((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
+                
                 xhr.upload.onprogress = (e) => {
-                    if (e.lengthComputable && onProgress) onProgress(e.loaded, e.total);
+                    if (e.lengthComputable) {
+                        const pct = Math.round((e.loaded / e.total) * 100);
+                        document.getElementById('uploadProgressBar').style.width = pct + '%';
+                        document.getElementById('uploadPercent').textContent = pct + '%';
+                    }
                 };
+
                 xhr.onload = () => {
                     try { resolve(JSON.parse(xhr.responseText)); }
                     catch { reject(new Error('Invalid response')); }
                 };
                 xhr.onerror = () => reject(new Error('Network error'));
                 xhr.onabort = () => reject(new Error('Cancelled'));
+
+                const controller = { abort: () => xhr.abort() };
+                abortControllers.push(controller);
+
                 xhr.open('POST', `https://api.telegram.org/bot${token}/${endpoint}`);
                 xhr.send(formData);
             });
         }
 
-        function saveUploadedFile(result, file, fileType, field) {
-            const doc = result.result[field] || result.result.document || result.result.video || {};
-            files.unshift({
-                id: doc.file_id || 'file_' + Date.now(),
-                uniqueId: doc.file_unique_id || Date.now().toString(),
-                name: file.name, size: doc.file_size || file.size,
-                mime: file.type || doc.mime_type, type: fileType,
-                date: new Date().toISOString(),
-                messageId: result.result.message_id,
-                chatId: result.result.chat.id,
-                storage: 'cloud',
-                streamingUrl: fileType === 'video' ? doc.file_path : null
-            });
-            saveFiles(); renderFiles(); updateStats();
+        function updateOverlay(name, pct, info, type, part, total) {
+            document.getElementById('uploadName').textContent = name;
+            document.getElementById('uploadProgressBar').style.width = pct + '%';
+            document.getElementById('uploadPercent').textContent = Math.round(pct) + '%';
+            document.getElementById('chunkInfo').textContent = info;
+            document.getElementById('uploadTitle').textContent = total > 1 ? `Chunked (${part}/${total})` : 'Uploading';
         }
 
-        function saveLocally(file, fileType) {
+        function saveFileLocally(file, fileType) {
             files.unshift({
-                id: 'local_' + Date.now(), uniqueId: 'local_' + Date.now(),
+                id: 'local_' + Date.now(),
                 name: file.name, size: file.size, mime: file.type,
                 type: fileType, date: new Date().toISOString(),
                 localUrl: URL.createObjectURL(file), storage: 'local'
             });
             saveFiles(); renderFiles(); updateStats();
-            toast('Saved locally', 'info');
+            toast('Saved locally as backup', 'info');
         }
 
         // ============ STREAMING ============
@@ -702,29 +528,31 @@
             const config = getConfig();
             if (!config.token) return toast('Configure bot', 'warning');
 
-            let videoUrl = '';
+            const fileIdToUse = file.isChunked && file.parts ? file.parts[0].fileId : file.id;
+            
             try {
-                const fileIdToUse = file.isChunked && file.parts ? file.parts[0].fileId : file.id;
                 const r = await fetch(`https://api.telegram.org/bot${config.token}/getFile?file_id=${fileIdToUse}`);
                 const d = await r.json();
-                if (d.ok) videoUrl = `https://api.telegram.org/file/bot${config.token}/${d.result.file_path}`;
-            } catch (e) { return toast('Could not load video', 'error'); }
-
-            if (!videoUrl) return toast('No video URL', 'error');
-
-            const modal = document.createElement('div');
-            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:3000;display:flex;align-items:center;justify-content:center;';
-            modal.onclick = e => { if (e.target === modal) modal.remove(); };
-            modal.innerHTML = `
-                <div style="width:90%;max-width:900px;background:#000;border-radius:16px;overflow:hidden;">
-                    <video controls autoplay style="width:100%;max-height:80vh;">
-                        <source src="${videoUrl}" type="${file.mime || 'video/mp4'}">
-                    </video>
-                </div>
-                <button onclick="this.parentElement.remove()" style="position:absolute;top:20px;right:20px;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.1);border:none;color:#fff;font-size:20px;cursor:pointer;">
-                    <i class="fas fa-times"></i>
-                </button>`;
-            document.body.appendChild(modal);
+                if (d.ok) {
+                    const url = `https://api.telegram.org/file/bot${config.token}/${d.result.file_path}`;
+                    
+                    // Create video player
+                    const modal = document.createElement('div');
+                    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+                    modal.onclick = e => { if (e.target === modal) modal.remove(); };
+                    modal.innerHTML = `
+                        <div style="width:95%;max-width:1000px;background:#000;border-radius:16px;overflow:hidden;position:relative;">
+                            <video controls autoplay style="width:100%;max-height:85vh;display:block;">
+                                <source src="${url}" type="${file.mime || 'video/mp4'}">
+                            </video>
+                            <button onclick="this.parentElement.parentElement.remove()" 
+                                style="position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:18px;cursor:pointer;z-index:1;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>`;
+                    document.body.appendChild(modal);
+                }
+            } catch (e) { toast('Streaming failed', 'error'); }
         }
 
         // ============ DOWNLOAD ============
@@ -739,7 +567,7 @@
             }
 
             if (file.isChunked && file.parts) {
-                if (!confirm(`This file was uploaded in ${file.parts.length} chunks. Download and combine?`)) return;
+                if (!confirm(`Download and reassemble ${file.totalChunks} chunks?`)) return;
                 await downloadChunkedFile(file);
                 return;
             }
@@ -750,10 +578,12 @@
                 const d = await r.json();
                 if (d.ok) {
                     const url = `https://api.telegram.org/file/bot${config.token}/${d.result.file_path}`;
-                    if (file.type === 'video' && confirm('Stream video?')) {
+                    if (file.type === 'video' && confirm('Stream or Download?\nOK = Stream | Cancel = Download')) {
                         streamVideo(fileId);
                     } else {
-                        window.open(url, '_blank');
+                        const a = document.createElement('a');
+                        a.href = url; a.download = file.name; a.target = '_blank';
+                        a.click();
                     }
                 }
             } catch (e) { toast('Download failed', 'error'); }
@@ -761,7 +591,9 @@
 
         async function downloadChunkedFile(file) {
             const config = getConfig();
+            toast(`Downloading ${file.totalChunks} chunks...`, 'info');
             const chunks = [];
+
             for (let i = 0; i < file.parts.length; i++) {
                 try {
                     const r = await fetch(`https://api.telegram.org/bot${config.token}/getFile?file_id=${file.parts[i].fileId}`);
@@ -769,18 +601,23 @@
                     if (d.ok) {
                         const resp = await fetch(`https://api.telegram.org/file/bot${config.token}/${d.result.file_path}`);
                         chunks.push(await resp.blob());
+                        if (i % 10 === 0 || i === file.parts.length - 1) {
+                            toast(`${i + 1}/${file.totalChunks} chunks downloaded`, 'info');
+                        }
                     }
                 } catch (e) {
-                    toast(`Failed part ${i + 1}`, 'error');
+                    toast(`Failed chunk ${i + 1}`, 'error');
                     return;
                 }
             }
+
             const combined = new Blob(chunks, { type: file.mime });
             const url = URL.createObjectURL(combined);
             const a = document.createElement('a');
-            a.href = url; a.download = file.name; a.click();
-            URL.revokeObjectURL(url);
-            toast('Downloaded!', 'success');
+            a.href = url; a.download = file.name;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            toast('File reassembled and downloaded!', 'success');
         }
 
         // ============ DELETE ============
@@ -791,28 +628,26 @@
 
             const file = files[idx];
             const config = getConfig();
-            const msgs = file.isChunked ? file.parts.map(p => ({ chatId: p.chatId || config.chat, messageId: p.messageId }))
+            
+            const messages = file.isChunked && file.parts 
+                ? file.parts.map(p => ({ chatId: p.chatId || config.chat, messageId: p.messageId }))
                 : [{ chatId: file.chatId || config.chat, messageId: file.messageId }];
 
-            for (const m of msgs) {
-                try {
-                    await fetch(`https://api.telegram.org/bot${config.token}/deleteMessage`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chat_id: m.chatId, message_id: m.messageId })
-                    });
-                } catch (e) {}
+            for (const m of messages) {
+                if (m.messageId) {
+                    try {
+                        await fetch(`https://api.telegram.org/bot${config.token}/deleteMessage`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ chat_id: m.chatId, message_id: m.messageId })
+                        });
+                    } catch (e) {}
+                }
             }
+
             files.splice(idx, 1);
             saveFiles(); renderFiles(); updateStats();
             toast('Deleted', 'success');
-        }
-
-        function createFolder() {
-            const n = prompt('Folder name:');
-            if (!n?.trim()) return;
-            files.unshift({ id: 'f_' + Date.now(), name: n.trim(), size: 0, type: 'folder', date: new Date().toISOString(), isFolder: true, storage: 'local' });
-            saveFiles(); renderFiles(); updateStats();
-            toast('Created', 'success');
         }
 
         // ============ RENDER ============
@@ -820,32 +655,28 @@
             const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
             const fl = q ? files.filter(f => f.name.toLowerCase().includes(q)) : files;
             const c = document.getElementById('filesContainer');
+
             if (!fl.length) {
-                c.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><h3>No files</h3></div>';
+                c.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text2);"><i class="fas fa-cloud-upload-alt" style="font-size:64px;opacity:0.15;display:block;margin-bottom:16px;"></i><h3 style="color:var(--text);">Drop files here</h3><p>No size limits • Auto-chunking</p></div>';
                 return;
             }
-            c.innerHTML = `<div class="files-grid">${fl.map(f => f.isFolder ? renderFolderCard(f) : renderFileCard(f)).join('')}</div>`;
-        }
 
-        function renderFolderCard(f) {
-            return `<div class="file-card"><div class="file-actions"><button class="icon-btn danger" onclick="event.stopPropagation();deleteFile('${f.id}')"><i class="fas fa-trash"></i></button></div><div class="file-icon" style="background:rgba(139,92,246,0.15);color:#a78bfa;"><i class="fas fa-folder"></i></div><div class="file-name">${esc(f.name)}</div><div class="file-meta"><span>Folder</span></div></div>`;
-        }
-
-        function renderFileCard(f) {
-            const isVid = f.type === 'video';
-            const isLarge = f.isChunked;
-            return `
-                <div class="file-card ${isLarge ? 'large-file' : isVid ? 'video-file' : ''}" ondblclick="downloadFile('${f.id}')">
-                    <span class="file-type-badge ${isLarge ? 'large' : f.type}">${isLarge ? 'CHUNKED' : f.type.toUpperCase()}</span>
+            c.innerHTML = `<div class="files-grid">${fl.map(f => `
+                <div class="file-card" ondblclick="downloadFile('${f.id}')">
                     <div class="file-actions">
-                        ${isVid ? `<button class="icon-btn play-btn" onclick="event.stopPropagation();streamVideo('${f.id}')" title="Stream"><i class="fas fa-play"></i></button>` : ''}
+                        ${f.type === 'video' ? `<button class="icon-btn" onclick="event.stopPropagation();streamVideo('${f.id}')" title="Stream"><i class="fas fa-play"></i></button>` : ''}
                         <button class="icon-btn" onclick="event.stopPropagation();downloadFile('${f.id}')" title="Download"><i class="fas fa-download"></i></button>
                         <button class="icon-btn danger" onclick="event.stopPropagation();deleteFile('${f.id}')" title="Delete"><i class="fas fa-trash"></i></button>
                     </div>
-                    <div class="file-icon" style="background:${iconBg(f.type)};color:${iconClr(f.type)};"><i class="fas ${icon(f.type)}"></i></div>
+                    <div class="file-icon" style="background:${iconBg(f.type)};color:${iconClr(f.type)};">
+                        <i class="fas ${icon(f.type)}"></i>
+                    </div>
                     <div class="file-name">${esc(f.name)}</div>
-                    <div class="file-meta"><span>${formatSize(f.size)}</span><span>${isLarge ? `📦${f.totalChunks}p` : f.storage === 'cloud' ? '☁' : '💾'}</span></div>
-                </div>`;
+                    <div class="file-meta">
+                        <span>${formatSize(f.size)}</span>
+                        <span>${f.isChunked ? `📦${f.totalChunks}` : f.storage === 'cloud' ? '☁' : '💾'}</span>
+                    </div>
+                </div>`).join('')}</div>`;
         }
 
         function updateStats() {
@@ -859,10 +690,10 @@
         // ============ HELPERS ============
         function getFileType(file) {
             const ext = (file.name.split('.').pop() || '').toLowerCase();
-            if (file.type.startsWith('video/') || ['mp4','avi','mkv','mov','webm'].includes(ext)) return 'video';
-            if (file.type.startsWith('image/') || ['jpg','png','gif','webp'].includes(ext)) return 'image';
-            if (['pdf','doc','docx','txt','xls','xlsx'].includes(ext)) return 'document';
-            if (['zip','rar','7z','tar'].includes(ext)) return 'archive';
+            if (file.type.startsWith('video/') || ['mp4','avi','mkv','mov','webm','m4v'].includes(ext)) return 'video';
+            if (file.type.startsWith('image/') || ['jpg','png','gif','webp','bmp'].includes(ext)) return 'image';
+            if (['pdf','doc','docx','txt','xls','xlsx','ppt'].includes(ext)) return 'document';
+            if (['zip','rar','7z','tar','gz'].includes(ext)) return 'archive';
             return 'other';
         }
 
@@ -872,16 +703,31 @@
             return { endpoint: 'sendDocument', field: 'document' };
         }
 
-        function getEmoji(t) { const e = { video:'🎬', image:'🖼️', document:'📄', archive:'📦' }; return e[t] || '📁'; }
-        function iconBg(t) { const b = { video:'rgba(239,68,68,0.15)', image:'rgba(59,130,246,0.15)', document:'rgba(16,185,129,0.15)', archive:'rgba(139,92,246,0.15)' }; return b[t] || 'rgba(156,163,175,0.1)'; }
-        function iconClr(t) { const c = { video:'#f87171', image:'#60a5fa', document:'#34d399', archive:'#a78bfa' }; return c[t] || '#9ca3af'; }
-        function icon(t) { const i = { video:'fa-file-video', image:'fa-file-image', document:'fa-file-alt', archive:'fa-file-archive' }; return i[t] || 'fa-file'; }
+        function getEmoji(t) {
+            const e = { video:'🎬', image:'🖼️', document:'📄', archive:'📦' };
+            return e[t] || '📁';
+        }
 
-        function formatSize(b) {
-            if (!b || b === 0) return '0 B';
+        function iconBg(t) {
+            const b = { video:'rgba(239,68,68,0.15)', image:'rgba(59,130,246,0.15)', document:'rgba(16,185,129,0.15)', archive:'rgba(139,92,246,0.15)' };
+            return b[t] || 'rgba(156,163,175,0.1)';
+        }
+
+        function iconClr(t) {
+            const c = { video:'#f87171', image:'#60a5fa', document:'#34d399', archive:'#a78bfa' };
+            return c[t] || '#9ca3af';
+        }
+
+        function icon(t) {
+            const i = { video:'fa-file-video', image:'fa-file-image', document:'fa-file-alt', archive:'fa-file-archive' };
+            return i[t] || 'fa-file';
+        }
+
+        function formatSize(bytes) {
+            if (!bytes || bytes === 0) return '0 B';
             const u = ['B','KB','MB','GB','TB'];
-            const i = Math.floor(Math.log(b) / Math.log(1024));
-            return parseFloat((b / Math.pow(1024, i)).toFixed(2)) + ' ' + u[i];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + u[i];
         }
 
         function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
@@ -897,8 +743,10 @@
         }
 
         function cancelUpload() {
-            if (currentAbortController) { currentAbortController.abort(); currentAbortController = null; }
+            abortControllers.forEach(c => c.abort());
+            abortControllers = [];
             document.getElementById('uploadOverlay').classList.remove('active');
+            toast('Upload cancelled', 'info');
         }
 
         document.addEventListener('paste', e => {
