@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TeleDrive - Enterprise Cloud Storage powered by Telegram">
+    <meta name="theme-color" content="#7c3aed">
+    <title>TeleDrive — Cloud Storage</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ============ DESIGN SYSTEM ============ */
+        :root {
+            /* Colors - Google Material Design inspired */
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            --gray-950: #020617;
+
+            --primary-50: #f5f3ff;
+            --primary-100: #ede9fe;
+            --primary-200: #ddd6fe;
+            --primary-300: #c4b5fd;
+            --primary-400: #a78bfa;
+            --primary-500: #8b5cf6;
+            --primary-600: #7c3aed;
+            --primary-700: #6d28d9;
+            --primary-800: #5b21b6;
+            --primary-900: #4c1d95;
+
+            --success-500: #10b981;
+            --success-600: #059669;
+            --warning-500: #f59e0b;
+            --warning-600: #d97706;
+            --error-500: #ef4444;
+            --error-600: #dc2626;
+
+            /* Surfaces */
+            --surface-ground: #f8fafc;
+            --surface-card: #ffffff;
+            --surface-overlay: rgba(0, 0, 0, 0.5);
+            --surface-hover: #f1f5f9;
+
+            /* Typography */
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', monospace;
+
+            /* Spacing */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --spacing-2xl: 48px;
+            --spacing-3xl: 64px;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+            /* Borders */
+            --radius-xs: 4px;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --radius-full: 9999px;
+
+            /* Transitions */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+            /* Layout */
+            --sidebar-width: 280px;
+            --header-height: 64px;
+        }
+
+        /* Dark theme */
+        .dark-theme {
+            --surface-ground: #0f172a;
+            --surface-card: #1e293b;
+            --surface-hover: #334155;
+            --gray-50: #0f172a;
+            --gray-100: #1e293b;
+            --gray-200: #334155;
+            --gray-700: #cbd5e1;
+            --gray-800: #e2e8f0;
+            --gray-900: #f8fafc;
+        }
+
+        /* ============ RESET ============ */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--surface-ground);
+            color: var(--gray-900);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ============ LAYOUT ============ */
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--surface-card);
+            border-right: 1px solid var(--gray-200);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 40;
+            transition: transform var(--transition-base);
+        }
+
+        .sidebar-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gray-900);
+            letter-spacing: -0.3px;
+        }
+
+        .logo-text span {
+            color: var(--primary-600);
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: var(--spacing-md);
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .nav-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--gray-500);
+            padding: var(--spacing-sm) var(--spacing-md);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-700);
+            text-decoration: none;
+            margin-bottom: 2px;
+        }
+
+        .nav-item:hover {
+            background: var(--surface-hover);
+            color: var(--gray-900);
+        }
+
+        .nav-item.active {
+            background: var(--primary-50);
+            color: var(--primary-700);
+            font-weight: 600;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            background: var(--primary-100);
+            color: var(--primary-700);
+            padding: 2px 8px;
+            border-radius: var(--radius-full);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            padding: var(--spacing-md);
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .storage-info-mini {
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+        }
+
+        .storage-info-mini .label {
+            font-size: 11px;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .storage-info-mini .value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 4px;
+            background: var(--gray-200);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-500), var(--primary-400));
+            border-radius: var(--radius-full);
+            transition: width var(--transition-slow);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Bar */
+        .topbar {
+            height: var(--header-height);
+            background: var(--surface-card);
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            padding: 0 var(--spacing-xl);
+            gap: var(--spacing-lg);
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .dark-theme .topbar {
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 720px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 16px 10px 44px;
+            background: var(--gray-100);
+            border: 1px solid transparent;
+            border-radius: var(--radius-full);
+            font-size: 14px;
+            color: var(--gray-900);
+            outline: none;
+            transition: all var(--transition-fast);
+            font-family: var(--font-sans);
+        }
+
+        .search-box input:focus {
+            background: var(--surface-card);
+            border-color: var(--primary-300);
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            font-size: 16px;
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-left: auto;
+        }
+
+        .icon-button {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            border: none;
+            background: transparent;
+            color: var(--gray-600);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            font-size: 18px;
+            position: relative;
+        }
+
+        .icon-button:hover {
+            background: var(--gray-100);
+            color: var(--gray-900);
+        }
+
+        .icon-button .indicator {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            background: var(--success-500);
+            border-radius: var(--radius-full);
+            border: 2px solid var(--surface-card);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: var(--spacing-xl);
+            overflow-y: auto;
+        }
+
+        /* Page Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--spacing-xl);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--gray-900);
+            letter-spacing: -0.5px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--gray-500);
+            margin-top: var(--spacing-xs);
+        }
+
+        .button-group {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: 10px 20px;
+            border-radius: var(--radius-full);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all var(--transition-fast);
+            font-family: var(--font-sans);
+            white-space: nowrap;
+            letter-spacing: 0.1px;
+        }
+
+        .btn-primary {
+            background: var(--primary-600);
+            color: white;
+            box-shadow: 0 1px 3px rgba(124, 58, 237, 0.3);
+        }
+        .btn-primary:hover {
+            background: var(--primary-700);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--surface-card);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+        .btn-secondary:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-400);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--gray-600);
+        }
+        .btn-ghost:hover {
+            background: var(--gray-100);
+        }
+
+        .btn-danger {
+            background: var(--error-500);
+            color: white;
+        }
+        .btn-danger:hover {
+            background: var(--error-600);
+        }
+
+        .btn-lg {
+            padding: 12px 28px;
+            font-size: 15px;
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 12px;
+        }
+
+        /* Drop Zone */
+        .drop-zone {
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-3xl);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-base);
+            background: var(--surface-card);
+            margin-bottom: var(--spacing-xl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drop-zone:hover {
+            border-color: var(--primary-400);
+            background: var(--primary-50);
+        }
+
+        .drop-zone.drag-over {
+            border-color: var(--primary-500);
+            background: var(--primary-50);
+            border-style: solid;
+            transform: scale(1.01);
+        }
+
+        .drop-zone-icon {
+            font-size: 56px;
+            color: var(--primary-400);
+            margin-bottom: var(--spacing-md);
+            display: block;
+        }
+
+        .drop-zone-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .drop-zone-subtitle {
+            font-size: 14px;
+            color: var(--gray-500);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .drop-zone-badge {
+            display: inline-block;
+            background: var(--primary-100);
+            color: var(--primary-700);
+            padding: 6px 16px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* File Grid */
+        .files-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+        }
+
+        .files-count {
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+
+        .view-toggle {
+            display: flex;
+            background: var(--gray-100);
+            border-radius: var(--radius-full);
+            padding: 2px;
+        }
+
+        .view-toggle button {
+            padding: 6px 12px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--gray-600);
+            transition: all var(--transition-fast);
+        }
+
+        .view-toggle button.active {
+            background: var(--surface-card);
+            color: var(--gray-900);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .file-card {
+            background: var(--surface-card);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            position: relative;
+        }
+
+        .file-card:hover {
+            border-color: var(--primary-300);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .file-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .file-card-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-900);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .file-card-meta {
+            font-size: 12px;
+            color: var(--gray-500);
+        }
+
+        .file-card-actions {
+            position: absolute;
+            top: var(--spacing-sm);
+            right: var(--spacing-sm);
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .file-card:hover .file-card-actions {
+            opacity: 1;
+        }
+
+        /* Table View */
+        .files-table {
+            width: 100%;
+            background: var(--surface-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--gray-200);
+            overflow: hidden;
+        }
+
+        .files-table-header {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 120px;
+            padding: 14px 20px;
+            background: var(--gray-50);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .files-table-row {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 120px;
+            padding: 14px 20px;
+            align-items: center;
+            border-bottom: 1px solid var(--gray-100);
+            transition: background var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .files-table-row:hover {
+            background: var(--gray-50);
+        }
+
+        .file-cell-name {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .file-cell-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: var(--spacing-lg);
+            right: var(--spacing-lg);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: var(--spacing-sm);
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: 14px 20px;
+            background: var(--surface-card);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-xl);
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+            min-width: 320px;
+            max-width: 420px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .toast-success { border-left: 4px solid var(--success-500); }
+        .toast-error { border-left: 4px solid var(--error-500); }
+        .toast-warning { border-left: 4px solid var(--warning-500); }
+        .toast-info { border-left: 4px solid var(--primary-500); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Upload Overlay */
+        .upload-overlay {
+            position: fixed;
+            bottom: var(--spacing-lg);
+            right: var(--spacing-lg);
+            width: 380px;
+            background: var(--surface-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-2xl);
+            z-index: 999;
+            display: none;
+            border: 1px solid var(--gray-200);
+            overflow: hidden;
+        }
+
+        .upload-overlay.active {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .upload-overlay-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-bottom: 1px solid var(--gray-200);
+            background: var(--gray-50);
+        }
+
+        .upload-overlay-body {
+            padding: var(--spacing-lg);
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            background: var(--surface-card);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            max-width: 480px;
+            width: 90%;
+            box-shadow: var(--shadow-2xl);
+        }
+
+        .modal h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .modal p {
+            font-size: 14px;
+            color: var(--gray-600);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            justify-content: flex-end;
+        }
+
+        /* Config Section */
+        .config-section {
+            background: var(--surface-card);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-md);
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray-600);
+            margin-bottom: var(--spacing-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: var(--font-mono);
+            color: var(--gray-900);
+            outline: none;
+            transition: border-color var(--transition-fast);
+            background: var(--surface-card);
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-connected {
+            background: #ecfdf5;
+            color: #065f46;
+        }
+
+        .status-disconnected {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: var(--radius-full);
+        }
+
+        .status-dot.green { background: var(--success-500); }
+        .status-dot.red { background: var(--error-500); }
+        .status-dot.yellow { background: var(--warning-500); }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+            .mobile-menu-btn {
+                display: flex !important;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .content-area {
+                padding: var(--spacing-md);
+            }
+            .files-grid {
+                grid-template-columns: 1fr;
+            }
+            .files-table-header,
+            .files-table-row {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-sm);
+            }
+            .page-header {
+                flex-direction: column;
+            }
+            .button-group {
+                width: 100%;
+            }
+            .button-group .btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 20px;
+            color: var(--gray-600);
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-3xl) var(--spacing-xl);
+        }
+
+        .empty-state-icon {
+            font-size: 80px;
+            color: var(--gray-300);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: var(--gray-500);
+            max-width: 400px;
+            margin: 0 auto var(--spacing-lg);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-cloud"></i>
+                </div>
+                <div class="logo-text">Tele<span>Drive</span></div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a class="nav-item active" onclick="navigateTo('files')">
+                        <i class="fas fa-folders"></i> My Drive
+                        <span class="nav-badge" id="sidebarFileCount">0</span>
+                    </a>
+                    <a class="nav-item" onclick="navigateTo('recent')">
+                        <i class="fas fa-clock"></i> Recent
+                    </a>
+                    <a class="nav-item" onclick="navigateTo('shared')">
+                        <i class="fas fa-users"></i> Shared
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Settings</div>
+                    <a class="nav-item" onclick="toggleConfig()">
+                        <i class="fas fa-cog"></i> Configuration
+                    </a>
+                    <a class="nav-item" onclick="toggleTheme()">
+                        <i class="fas fa-moon"></i> Appearance
+                    </a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="storage-info-mini">
+                    <div class="label">Storage</div>
+                    <div class="value" id="sidebarStorage">0 B of 10 GB used</div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="sidebarProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search files..." id="searchInput" oninput="renderFiles()">
+                </div>
+                <div class="topbar-actions">
+                    <button class="icon-button" onclick="refreshFiles()" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="icon-button" onclick="toggleTheme()" title="Theme">
+                        <i class="fas fa-palette"></i>
+                    </button>
+                    <div class="user-avatar">T</div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="content-area">
+                <!-- Config Section -->
+                <div class="config-section" id="configSection" style="display:none;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--spacing-md);">
+                        <h3 style="font-size:18px;font-weight:600;">API Configuration</h3>
+                        <span class="status-badge" id="configStatus">
+                            <span class="status-dot yellow"></span>
+                            Not configured
+                        </span>
+                    </div>
+                    <div class="config-grid">
+                        <div class="form-group">
+                            <label>Bot Token</label>
+                            <input type="password" id="botToken" placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz">
+                        </div>
+                        <div class="form-group">
+                            <label>Chat/Channel ID</label>
+                            <input type="text" id="chatId" placeholder="-1001234567890">
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:var(--spacing-sm);margin-top:var(--spacing-md);flex-wrap:wrap;">
+                        <button class="btn btn-primary btn-sm" onclick="saveConfig()">Save & Connect</button>
+                        <button class="btn btn-secondary btn-sm" onclick="validateChat()">Validate Chat ID</button>
+                        <span style="font-size:12px;color:var(--gray-500);padding:8px;">
+                            Get bot token from @BotFather • Chat ID from @getidsbot
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">My Drive</h1>
+                        <p class="page-subtitle" id="fileCountText">0 files</p>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-primary btn-lg" onclick="triggerUpload()">
+                            <i class="fas fa-plus"></i> New Upload
+                        </button>
+                        <button class="btn btn-secondary" onclick="createFolder()">
+                            <i class="fas fa-folder-plus"></i> Folder
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Drop Zone -->
+                <div class="drop-zone" id="dropZone" onclick="triggerUpload()">
+                    <i class="fas fa-cloud-upload-alt drop-zone-icon"></i>
+                    <div class="drop-zone-title">Drop files here to upload</div>
+                    <div class="drop-zone-subtitle">or click to browse from your device</div>
+                    <span class="drop-zone-badge">Max file size: 10 GB</span>
+                </div>
+
+                <!-- Files Toolbar -->
+                <div class="files-toolbar">
+                    <span class="files-count" id="filesCountLabel">0 items</span>
+                    <div class="view-toggle">
+                        <button class="active" onclick="setView('grid')" id="gridViewBtn">
+                            <i class="fas fa-th-large"></i> Grid
+                        </button>
+                        <button onclick="setView('list')" id="listViewBtn">
+                            <i class="fas fa-list"></i> List
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Files Container -->
+                <div id="filesContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h3>Your drive is empty</h3>
+                        <p>Upload files to get started. You can store up to 10 GB of data securely.</p>
+                        <button class="btn btn-primary" onclick="triggerUpload()">
+                            <i class="fas fa-upload"></i> Upload Files
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Hidden file input -->
+    <input type="file" id="fileInput" multiple style="display:none" onchange="handleFileSelect(event)">
+
+    <!-- Upload Progress Overlay -->
+    <div class="upload-overlay" id="uploadOverlay">
+        <div class="upload-overlay-header">
+            <span style="font-weight:600;font-size:14px;">
+                <i class="fas fa-upload" style="color:var(--primary-500);"></i> Uploading
+            </span>
+            <button class="icon-button" onclick="cancelUpload()" style="width:32px;height:32px;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="upload-overlay-body">
+            <div style="font-weight:500;margin-bottom:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="uploadName">-</div>
+            <div class="progress-track" style="height:8px;">
+                <div class="progress-fill" id="uploadBar" style="width:0%"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--gray-500);">
+                <span id="uploadPercent">0%</span>
+                <span id="uploadSpeed">-</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // ============ CONFIGURATION ============
+        const API_ID = 31490201;
+        const API_HASH = '7da61fca1ea2b960c8a881099e2a0b90';
+        const MAX_FILE_SIZE = 10 * 1024 * 1024 * 1024;
+        const STORAGE_LIMIT = 10 * 1024 * 1024 * 1024;
+
+        // ============ STATE ============
+        let files = [];
+        let currentView = 'grid';
+        let xhrUpload = null;
+        let uploadStartTime = 0;
+        let isDarkTheme = false;
+
+        // ============ INIT ============
+        document.addEventListener('DOMContentLoaded', () => {
+            loadConfig();
+            loadFiles();
+            setupDragDrop();
+            updateStats();
+            autoConnect();
+        });
+
+        // ============ SIDEBAR ============
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function navigateTo(page) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+        }
+
+        function toggleTheme() {
+            isDarkTheme = !isDarkTheme;
+            document.body.classList.toggle('dark-theme', isDarkTheme);
+            localStorage.setItem('td_theme', isDarkTheme ? 'dark' : 'light');
+            toast('Theme updated', 'info');
+        }
+
+        function setView(view) {
+            currentView = view;
+            document.getElementById('gridViewBtn').classList.toggle('active', view === 'grid');
+            document.getElementById('listViewBtn').classList.toggle('active', view === 'list');
+            renderFiles();
+        }
+
+        function toggleConfig() {
+            const section = document.getElementById('configSection');
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ============ STORAGE ============
+        function getConfig() {
+            return {
+                botToken: localStorage.getItem('td_bot_token') || '',
+                chatId: localStorage.getItem('td_chat_id') || ''
+            };
+        }
+
+        function setConfig(botToken, chatId) {
+            localStorage.setItem('td_bot_token', botToken);
+            localStorage.setItem('td_chat_id', chatId);
+        }
+
+        function loadConfig() {
+            const c = getConfig();
+            document.getElementById('botToken').value = c.botToken;
+            document.getElementById('chatId').value = c.chatId;
+            if (localStorage.getItem('td_theme') === 'dark') {
+                isDarkTheme = true;
+                document.body.classList.add('dark-theme');
+            }
+        }
+
+        function loadFiles() {
+            try {
+                const raw = localStorage.getItem('td_files');
+                if (raw) files = JSON.parse(raw);
+            } catch (e) {
+                files = [];
+            }
+            renderFiles();
+            updateStats();
+        }
+
+        function saveFiles() {
+            const toSave = files.map(({ localUrl, ...rest }) => rest);
+            try {
+                localStorage.setItem('td_files', JSON.stringify(toSave));
+            } catch (e) {
+                toast('Storage quota exceeded', 'warning');
+            }
+        }
+
+        // ============ CONNECTION ============
+        async function autoConnect() {
+            const c = getConfig();
+            if (c.botToken) await testConnection(true);
+            else updateConfigStatus(false);
+        }
+
+        async function saveConfig() {
+            const botToken = document.getElementById('botToken').value.trim();
+            let chatId = document.getElementById('chatId').value.trim();
+            if (!botToken || !chatId) { toast('Fill all fields', 'warning'); return; }
+            chatId = formatChatId(chatId);
+            document.getElementById('chatId').value = chatId;
+            setConfig(botToken, chatId);
+            toast('Saved!', 'success');
+            await testConnection(false);
+        }
+
+        async function testConnection(silent = false) {
+            const c = getConfig();
+            if (!c.botToken) { updateConfigStatus(false); return; }
+            try {
+                const r = await fetch(`https://api.telegram.org/bot${c.botToken}/getMe`);
+                const d = await r.json();
+                if (d.ok) {
+                    updateConfigStatus(true, `@${d.result.username}`);
+                    if (!silent) toast(`Connected as @${d.result.username}`, 'success');
+                } else throw new Error(d.description);
+            } catch (e) {
+                updateConfigStatus(false);
+                if (!silent) toast(`Connection failed: ${e.message}`, 'error');
+            }
+        }
+
+        function updateConfigStatus(connected, text = '') {
+            const badge = document.getElementById('configStatus');
+            if (connected) {
+                badge.className = 'status-badge status-connected';
+                badge.innerHTML = '<span class="status-dot green"></span> ' + (text || 'Connected');
+            } else {
+                badge.className = 'status-badge status-disconnected';
+                badge.innerHTML = '<span class="status-dot red"></span> Disconnected';
+            }
+        }
+
+        async function validateChat() {
+            const botToken = document.getElementById('botToken').value.trim();
+            const rawId = document.getElementById('chatId').value.trim();
+            if (!botToken || !rawId) { toast('Enter token and ID', 'warning'); return; }
+            const chatId = formatChatId(rawId);
+            document.getElementById('chatId').value = chatId;
+            try {
+                const r = await fetch(`https://api.telegram.org/bot${botToken}/getChat?chat_id=${encodeURIComponent(chatId)}`);
+                const d = await r.json();
+                if (d.ok) {
+                    toast(`Valid: ${d.result.title || chatId}`, 'success');
+                    setConfig(botToken, chatId);
+                    updateConfigStatus(true);
+                } else throw new Error(d.description);
+            } catch (e) {
+                toast(`Invalid: ${e.message}`, 'error');
+            }
+        }
+
+        function formatChatId(id) {
+            let c = id.trim();
+            if (c.match(/^[a-zA-Z]\w{4,}$/)) return '@' + c;
+            if (c.startsWith('@')) return c;
+            let n = c.replace(/[^0-9-]/g, '');
+            if (n.startsWith('-100')) return n;
+            if (n.startsWith('-')) return '-100' + n.substring(1);
+            return '-100' + n;
+        }
+
+        // ============ DRAG & DROP ============
+        function setupDragDrop() {
+            const zone = document.getElementById('dropZone');
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
+                zone.addEventListener(ev, e => e.preventDefault());
+                document.addEventListener(ev, e => e.preventDefault());
+            });
+            ['dragenter', 'dragover'].forEach(ev => zone.addEventListener(ev, () => zone.classList.add('drag-over')));
+            ['dragleave', 'drop'].forEach(ev => zone.addEventListener(ev, () => zone.classList.remove('drag-over')));
+            zone.addEventListener('drop', e => { if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); });
+            document.addEventListener('drop', e => {
+                if (e.dataTransfer.files.length && !e.target.closest('.files-grid,.files-table')) {
+                    handleFiles(e.dataTransfer.files);
+                }
+            });
+        }
+
+        function triggerUpload() { document.getElementById('fileInput').click(); }
+        function handleFileSelect(e) { if (e.target.files.length) handleFiles(e.target.files); e.target.value = ''; }
+
+        function handleFiles(fileList) {
+            const c = getConfig();
+            if (!c.botToken || !c.chatId) {
+                toast('Configure API first', 'warning');
+                toggleConfig();
+                return;
+            }
+            for (const file of fileList) {
+                if (file.size > MAX_FILE_SIZE) { toast(`${file.name} exceeds 10 GB`, 'error'); continue; }
+                uploadFile(file);
+            }
+        }
+
+        // ============ UPLOAD ============
+        async function uploadFile(file) {
+            const c = getConfig();
+            const overlay = document.getElementById('uploadOverlay');
+            const bar = document.getElementById('uploadBar');
+            const pctEl = document.getElementById('uploadPercent');
+            const speedEl = document.getElementById('uploadSpeed');
+            const nameEl = document.getElementById('uploadName');
+
+            overlay.classList.add('active');
+            nameEl.textContent = file.name;
+            bar.style.width = '0%';
+            pctEl.textContent = '0%';
+            speedEl.textContent = 'Preparing...';
+            uploadStartTime = Date.now();
+
+            const fd = new FormData();
+            fd.append('chat_id', formatChatId(c.chatId));
+            fd.append('document', file);
+            fd.append('caption', `📁 ${file.name} • ${formatSize(file.size)}`);
+            fd.append('disable_notification', 'true');
+
+            xhrUpload = new XMLHttpRequest();
+
+            try {
+                const result = await new Promise((resolve, reject) => {
+                    xhrUpload.upload.onprogress = (e) => {
+                        if (e.lengthComputable) {
+                            const pct = Math.round((e.loaded / e.total) * 100);
+                            bar.style.width = pct + '%';
+                            pctEl.textContent = pct + '%';
+                            const elapsed = (Date.now() - uploadStartTime) / 1000;
+                            speedEl.textContent = elapsed > 0 ? formatSize(e.loaded / elapsed) + '/s' : '-';
+                        }
+                    };
+                    xhrUpload.onload = () => {
+                        try { resolve(JSON.parse(xhrUpload.responseText)); }
+                        catch { reject(new Error('Invalid response')); }
+                    };
+                    xhrUpload.onerror = () => reject(new Error('Network error'));
+                    xhrUpload.onabort = () => reject(new Error('Cancelled'));
+                    xhrUpload.open('POST', `https://api.telegram.org/bot${c.botToken}/sendDocument`);
+                    xhrUpload.send(fd);
+                });
+
+                if (result.ok) {
+                    const doc = result.result.document;
+                    files.unshift({
+                        id: doc.file_id,
+                        uniqueId: doc.file_unique_id,
+                        name: file.name,
+                        size: file.size,
+                        mime: file.type || doc.mime_type,
+                        type: getFileType(file.name),
+                        date: new Date().toISOString(),
+                        messageId: result.result.message_id,
+                        chatId: result.result.chat.id,
+                        storage: 'cloud'
+                    });
+                    saveFiles();
+                    renderFiles();
+                    updateStats();
+                    toast(`${file.name} uploaded`, 'success');
+                } else {
+                    if (result.description?.includes('chat not found')) {
+                        toast('Chat not found. Validate your Chat ID.', 'error');
+                    } else {
+                        throw new Error(result.description || 'Upload failed');
+                    }
+                }
+            } catch (err) {
+                if (err.message !== 'Cancelled') {
+                    toast(`Upload failed: ${err.message}`, 'error');
+                    files.unshift({
+                        id: 'local_' + Date.now(),
+                        uniqueId: 'local_' + Date.now(),
+                        name: file.name,
+                        size: file.size,
+                        mime: file.type,
+                        type: getFileType(file.name),
+                        date: new Date().toISOString(),
+                        localUrl: URL.createObjectURL(file),
+                        storage: 'local'
+                    });
+                    saveFiles();
+                    renderFiles();
+                    updateStats();
+                    toast('Saved locally', 'info');
+                }
+            } finally {
+                xhrUpload = null;
+                setTimeout(() => overlay.classList.remove('active'), 2000);
+            }
+        }
+
+        function cancelUpload() {
+            if (xhrUpload) { xhrUpload.abort(); xhrUpload = null; }
+            document.getElementById('uploadOverlay').classList.remove('active');
+            toast('Upload cancelled', 'info');
+        }
+
+        // ============ DOWNLOAD ============
+        async function downloadFile(fileId) {
+            const file = files.find(f => f.id === fileId);
+            if (!file) return;
+            if (file.storage === 'local' && file.localUrl) {
+                const a = document.createElement('a');
+                a.href = file.localUrl; a.download = file.name; a.click();
+                return;
+            }
+            const c = getConfig();
+            if (!c.botToken) { toast('Configure bot token', 'warning'); return; }
+            try {
+                const r = await fetch(`https://api.telegram.org/bot${c.botToken}/getFile?file_id=${fileId}`);
+                const d = await r.json();
+                if (d.ok) window.open(`https://api.telegram.org/file/bot${c.botToken}/${d.result.file_path}`, '_blank');
+                else throw new Error(d.description);
+            } catch (e) { toast(`Download failed: ${e.message}`, 'error'); }
+        }
+
+        // ============ DELETE ============
+        async function deleteFile(fileId) {
+            const idx = files.findIndex(f => f.id === fileId);
+            if (idx === -1) return;
+            if (!confirm(`Delete "${files[idx].name}" permanently?`)) return;
+            const file = files[idx];
+            if (file.storage === 'cloud' && file.messageId) {
+                const c = getConfig();
+                try {
+                    await fetch(`https://api.telegram.org/bot${c.botToken}/deleteMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chat_id: file.chatId || c.chatId, message_id: file.messageId })
+                    });
+                } catch (e) {}
+            }
+            files.splice(idx, 1);
+            saveFiles();
+            renderFiles();
+            updateStats();
+            toast('Deleted', 'success');
+        }
+
+        function createFolder() {
+            const name = prompt('Folder name:');
+            if (!name?.trim()) return;
+            files.unshift({
+                id: 'folder_' + Date.now(),
+                name: name.trim(),
+                size: 0,
+                type: 'folder',
+                date: new Date().toISOString(),
+                isFolder: true,
+                storage: 'local'
+            });
+            saveFiles();
+            renderFiles();
+            updateStats();
+            toast('Folder created', 'success');
+        }
+
+        // ============ RENDER ============
+        function renderFiles() {
+            const query = document.getElementById('searchInput')?.value?.toLowerCase() || '';
+            const filtered = query ? files.filter(f => f.name.toLowerCase().includes(query)) : files;
+            const container = document.getElementById('filesContainer');
+
+            if (!filtered.length) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="fas fa-folder-open"></i></div>
+                        <h3>${query ? 'No matching files' : 'Your drive is empty'}</h3>
+                        <p>${query ? 'Try a different search term.' : 'Upload files to get started.'}</p>
+                        ${!query ? '<button class="btn btn-primary" onclick="triggerUpload()"><i class="fas fa-upload"></i> Upload Files</button>' : ''}
+                    </div>`;
+            } else if (currentView === 'grid') {
+                container.innerHTML = `<div class="files-grid">${filtered.map(renderFileCard).join('')}</div>`;
+            } else {
+                container.innerHTML = `
+                    <div class="files-table">
+                        <div class="files-table-header">
+                            <div>Name</div><div>Size</div><div>Modified</div><div>Actions</div>
+                        </div>
+                        ${filtered.map(renderFileRow).join('')}
+                    </div>`;
+            }
+
+            document.getElementById('fileCountText').textContent = `${files.length} file${files.length !== 1 ? 's' : ''}`;
+            document.getElementById('filesCountLabel').textContent = `${filtered.length} item${filtered.length !== 1 ? 's' : ''}`;
+            document.getElementById('sidebarFileCount').textContent = files.length;
+        }
+
+        function renderFileCard(file) {
+            if (file.isFolder) {
+                return `
+                    <div class="file-card">
+                        <div class="file-card-actions">
+                            <button class="icon-button" onclick="event.stopPropagation();deleteFile('${file.id}')" style="width:32px;height:32px;font-size:14px;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="file-card-icon" style="background:rgba(139,92,246,0.1);color:#8b5cf6;">
+                            <i class="fas fa-folder"></i>
+                        </div>
+                        <div class="file-card-name">${esc(file.name)}</div>
+                        <div class="file-card-meta">Folder</div>
+                    </div>`;
+            }
+            const iconBg = getIconBg(file.type);
+            const iconColor = getIconColor(file.type);
+            const icon = getFileIcon(file.type);
+            return `
+                <div class="file-card" ondblclick="downloadFile('${file.id}')">
+                    <div class="file-card-actions">
+                        <button class="icon-button" onclick="event.stopPropagation();downloadFile('${file.id}')" style="width:32px;height:32px;font-size:14px;" title="Download">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="icon-button" onclick="event.stopPropagation();deleteFile('${file.id}')" style="width:32px;height:32px;font-size:14px;" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="file-card-icon" style="background:${iconBg};color:${iconColor};">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    <div class="file-card-name">${esc(file.name)}</div>
+                    <div class="file-card-meta">${formatSize(file.size)} • ${file.storage === 'cloud' ? '☁' : '💾'}</div>
+                </div>`;
+        }
+
+        function renderFileRow(file) {
+            if (file.isFolder) {
+                return `
+                    <div class="files-table-row">
+                        <div class="file-cell-name">
+                            <div class="file-cell-icon" style="background:rgba(139,92,246,0.1);color:#8b5cf6;"><i class="fas fa-folder"></i></div>
+                            ${esc(file.name)}
+                        </div>
+                        <div style="color:var(--gray-500);">—</div>
+                        <div style="color:var(--gray-500);font-size:13px;">${fmtDate(file.date)}</div>
+                        <div style="display:flex;gap:4px;">
+                            <button class="icon-button" onclick="deleteFile('${file.id}')" style="width:32px;height:32px;font-size:14px;"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`;
+            }
+            const iconBg = getIconBg(file.type);
+            const iconColor = getIconColor(file.type);
+            const icon = getFileIcon(file.type);
+            return `
+                <div class="files-table-row" ondblclick="downloadFile('${file.id}')">
+                    <div class="file-cell-name">
+                        <div class="file-cell-icon" style="background:${iconBg};color:${iconColor};"><i class="fas ${icon}"></i></div>
+                        <div>
+                            <div style="font-weight:500;">${esc(file.name)}</div>
+                            <div style="font-size:11px;color:var(--gray-500);">${file.storage === 'cloud' ? '☁ Cloud' : '💾 Local'}</div>
+                        </div>
+                    </div>
+                    <div style="font-size:13px;">${formatSize(file.size)}</div>
+                    <div style="color:var(--gray-500);font-size:13px;">${fmtDate(file.date)}</div>
+                    <div style="display:flex;gap:4px;">
+                        <button class="icon-button" onclick="downloadFile('${file.id}')" style="width:32px;height:32px;font-size:14px;"><i class="fas fa-download"></i></button>
+                        <button class="icon-button" onclick="deleteFile('${file.id}')" style="width:32px;height:32px;font-size:14px;"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>`;
+        }
+
+        function updateStats() {
+            const used = files.reduce((t, f) => t + (f.size || 0), 0);
+            const pct = Math.min((used / STORAGE_LIMIT) * 100, 100);
+            document.getElementById('sidebarStorage').textContent = `${formatSize(used)} of 10 GB used`;
+            document.getElementById('sidebarProgress').style.width = pct + '%';
+            document.getElementById('sidebarFileCount').textContent = files.length;
+            document.getElementById('fileCountText').textContent = `${files.length} file${files.length !== 1 ? 's' : ''}`;
+        }
+
+        function refreshFiles() { loadFiles(); toast('Refreshed', 'info'); }
+
+        // ============ HELPERS ============
+        function getFileType(name) {
+            const ext = (name.split('.').pop() || '').toLowerCase();
+            const map = {
+                image: ['jpg','jpeg','png','gif','bmp','webp','svg','ico'],
+                video: ['mp4','avi','mkv','mov','wmv','flv','webm'],
+                audio: ['mp3','wav','ogg','flac','aac','m4a'],
+                doc: ['pdf','doc','docx','txt','xls','xlsx','ppt','pptx','csv'],
+                archive: ['zip','rar','7z','tar','gz']
+            };
+            for (const [t, exts] of Object.entries(map)) if (exts.includes(ext)) return t;
+            return 'other';
+        }
+
+        function getIconBg(type) {
+            const m = { image:'rgba(59,130,246,0.1)', video:'rgba(239,68,68,0.1)', audio:'rgba(245,158,11,0.1)', doc:'rgba(16,185,129,0.1)', archive:'rgba(139,92,246,0.1)' };
+            return m[type] || 'rgba(156,163,175,0.1)';
+        }
+
+        function getIconColor(type) {
+            const m = { image:'#3b82f6', video:'#ef4444', audio:'#f59e0b', doc:'#10b981', archive:'#8b5cf6' };
+            return m[type] || '#9ca3af';
+        }
+
+        function getFileIcon(type) {
+            const m = { image:'fa-file-image', video:'fa-file-video', audio:'fa-file-audio', doc:'fa-file-alt', archive:'fa-file-archive' };
+            return m[type] || 'fa-file';
+        }
+
+        function formatSize(bytes) {
+            if (!bytes || bytes === 0) return '0 B';
+            const u = ['B','KB','MB','GB','TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + u[i];
+        }
+
+        function fmtDate(iso) {
+            if (!iso) return '—';
+            const d = new Date(iso);
+            return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+        }
+
+        function esc(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+
+        function toast(msg, type = 'info') {
+            const icons = { success:'fa-check-circle', error:'fa-exclamation-circle', warning:'fa-exclamation-triangle', info:'fa-info-circle' };
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = `toast toast-${type}`;
+            el.innerHTML = `<i class="fas ${icons[type]}" style="font-size:18px;"></i> <span>${esc(msg)}</span>`;
+            container.appendChild(el);
+            setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, 4000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'u') { e.preventDefault(); triggerUpload(); }
+            if (e.ctrlKey && e.key === 'k') { e.preventDefault(); document.getElementById('searchInput')?.focus(); }
+            if (e.ctrlKey && e.key === 'r') { e.preventDefault(); refreshFiles(); }
+        });
+
+        document.addEventListener('paste', (e) => {
+            for (const item of e.clipboardData?.items || []) {
+                if (item.kind === 'file') { handleFiles([item.getAsFile()]); break; }
+            }
+        });
+    </script>
+</body>
+</html>
