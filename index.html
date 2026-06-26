@@ -3,754 +3,1628 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TeleDrive — Cloud Storage</title>
+    <title>TeleDrive Pro — Large File Cloud Storage</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg: #f8fafc; --surface: #ffffff; --border: #e2e8f0;
-            --text: #1e293b; --text2: #64748b; --accent: #7c3aed; --accent2: #a78bfa;
-            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
-            --radius: 16px; --radius-sm: 10px; --shadow: 0 4px 24px rgba(0,0,0,0.08);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg); color: var(--text); min-height: 100vh;
-        }
-        .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
-        
-        .header {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 24px 28px; margin-bottom: 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: var(--shadow); flex-wrap: wrap; gap: 16px;
-        }
-        .logo { display: flex; align-items: center; gap: 12px; }
-        .logo-icon {
-            width: 44px; height: 44px; border-radius: 12px;
-            background: linear-gradient(135deg, #7c3aed, #a78bfa);
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 22px;
-        }
-        .logo h1 { font-size: 22px; font-weight: 700; }
-        .logo span { font-size: 11px; color: var(--text2); display: block; }
-        
-        .config-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 24px; margin-bottom: 20px;
-            box-shadow: var(--shadow);
-        }
-        .config-card h3 { font-size: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .field input, .field select {
-            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-            font-size: 14px; font-family: monospace; outline: none;
-        }
-        .field input:focus, .field select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
-        
-        .btn {
-            padding: 10px 20px; border: none; border-radius: 24px; font-size: 14px;
-            font-weight: 600; cursor: pointer; display: inline-flex; align-items: center;
-            gap: 8px; transition: all 0.2s;
-        }
-        .btn-primary { background: #7c3aed; color: #fff; }
-        .btn-primary:hover { background: #6d28d9; transform: translateY(-1px); }
-        .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
-        .btn-success { background: #10b981; color: #fff; }
-        .btn-danger { background: #ef4444; color: #fff; }
-        .btn-sm { padding: 6px 14px; font-size: 12px; }
-        
-        .drop-zone {
-            border: 2px dashed #cbd5e1; border-radius: var(--radius); padding: 48px;
-            text-align: center; cursor: pointer; margin-bottom: 20px;
-            background: var(--surface); transition: all 0.3s;
-        }
-        .drop-zone:hover { border-color: var(--accent); background: #f5f3ff; }
-        .drop-zone.drag-over { border-color: var(--accent); background: #ede9fe; transform: scale(1.01); }
-        .drop-zone i { font-size: 48px; color: var(--accent2); margin-bottom: 12px; }
-        .drop-zone h3 { font-size: 18px; margin-bottom: 4px; }
-        .drop-zone p { color: var(--text2); font-size: 14px; }
-        
-        .files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
-        .file-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 20px; cursor: pointer;
-            transition: all 0.2s; position: relative;
-        }
-        .file-card:hover { border-color: var(--accent); box-shadow: 0 8px 24px rgba(0,0,0,0.1); transform: translateY(-2px); }
-        .file-card .icon {
-            width: 44px; height: 44px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 22px; margin-bottom: 12px;
-        }
-        .file-card .name { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .file-card .meta { font-size: 11px; color: var(--text2); margin-top: 4px; }
-        .file-card .actions {
-            position: absolute; top: 12px; right: 12px; opacity: 0;
-            transition: opacity 0.2s; display: flex; gap: 4px;
-        }
-        .file-card:hover .actions { opacity: 1; }
-        .icon-btn {
-            width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border);
-            background: var(--surface); cursor: pointer; display: flex;
-            align-items: center; justify-content: center; font-size: 12px;
-            transition: all 0.2s;
-        }
-        .icon-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
-        
-        .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 1000; display: flex; flex-direction: column-reverse; gap: 8px; }
-        .toast {
-            padding: 14px 20px; border-radius: 12px; background: #fff;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.15); font-size: 14px;
-            font-weight: 500; display: flex; align-items: center; gap: 8px;
-            animation: slideIn 0.3s ease; border-left: 4px solid;
-        }
-        .toast-success { border-color: #10b981; } .toast-error { border-color: #ef4444; }
-        .toast-info { border-color: #7c3aed; } .toast-warning { border-color: #f59e0b; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        
-        .upload-panel {
-            position: fixed; bottom: 24px; right: 24px; width: 340px;
-            background: #fff; border-radius: 16px; box-shadow: 0 16px 48px rgba(0,0,0,0.2);
-            display: none; z-index: 999; overflow: hidden;
-        }
-        .upload-panel.active { display: block; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .upload-panel-header {
-            padding: 14px 18px; border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
-            font-weight: 600; font-size: 14px;
-        }
-        .upload-panel-body { padding: 18px; }
-        .progress-bar { width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
-        .progress-fill { height: 100%; background: #7c3aed; border-radius: 3px; transition: width 0.3s; }
-        
-        .status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; }
-        .dot.green { background: #10b981; } .dot.red { background: #ef4444; } .dot.yellow { background: #f59e0b; }
-        
-        .info-box {
-            background: #f0fdf4; border: 1px solid #bbf7d0;
-            border-radius: 10px; padding: 14px 18px; margin-top: 12px;
-            font-size: 13px; line-height: 1.8;
-        }
-        .info-box.important {
-            background: #fef3c7; border: 1px solid #fde68a;
-        }
-        .info-box strong { color: #7c3aed; }
-        .info-box code { background: #ede9fe; padding: 2px 6px; border-radius: 4px; font-size: 12px; color: #6d28d9; }
-        
-        .debug-info {
-            background: #1e293b; color: #10b981; padding: 12px 16px;
-            border-radius: 8px; font-family: monospace; font-size: 12px;
-            margin-top: 8px; display: none; max-height: 200px; overflow-y: auto;
+            --bg: #0a0a0f;
+            --surface: #14141f;
+            --surface2: #1c1c2a;
+            --text: #e8e8ed;
+            --text2: #9898a8;
+            --accent: #7c3aed;
+            --accent2: #a78bfa;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --border: #2a2a3a;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-xs: 6px;
         }
 
-        @media (max-width: 640px) {
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+        /* Header */
+        .header {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 28px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(124,58,237,0.3);
+        }
+
+        .logo-text h2 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent2), #c4b5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-text span {
+            font-size: 11px;
+            color: var(--text2);
+            letter-spacing: 0.5px;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px 18px;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent2);
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Config Section */
+        .config-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .config-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 11px;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 13px;
+            font-family: 'SF Mono', monospace;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: #6d28d9; transform: translateY(-1px); box-shadow: 0 8px 25px rgba(124,58,237,0.4); }
+        .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--accent); }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-sm { padding: 6px 14px; font-size: 11px; }
+        .btn-lg { padding: 14px 32px; font-size: 15px; }
+        .btn-block { width: 100%; justify-content: center; }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        /* Drop Zone */
+        .drop-zone {
+            background: var(--surface);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 60px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drop-zone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(124,58,237,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .drop-zone:hover::before,
+        .drop-zone.drag-over::before { opacity: 1; }
+
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: var(--accent);
+        }
+
+        .drop-zone.drag-over {
+            border-style: solid;
+            transform: scale(1.01);
+        }
+
+        .drop-icon {
+            font-size: 64px;
+            color: var(--accent2);
+            margin-bottom: 16px;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .drop-text {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            position: relative;
+        }
+
+        .drop-subtext {
+            font-size: 13px;
+            color: var(--text2);
+            position: relative;
+        }
+
+        .file-type-badges {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 16px;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .type-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .type-badge.video { background: rgba(239,68,68,0.15); color: #f87171; }
+        .type-badge.document { background: rgba(16,185,129,0.15); color: #34d399; }
+        .type-badge.image { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .type-badge.archive { background: rgba(139,92,246,0.15); color: #a78bfa; }
+        .type-badge.all { background: rgba(124,58,237,0.2); color: var(--accent2); }
+
+        /* Files Grid */
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .file-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+        }
+
+        .file-card.video-file { border-left: 3px solid #ef4444; }
+        .file-card.doc-file { border-left: 3px solid #10b981; }
+        .file-card.image-file { border-left: 3px solid #3b82f6; }
+
+        .file-type-indicator {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .file-type-indicator.video { background: rgba(239,68,68,0.2); color: #f87171; }
+        .file-type-indicator.document { background: rgba(16,185,129,0.2); color: #34d399; }
+        .file-type-indicator.image { background: rgba(59,130,246,0.2); color: #60a5fa; }
+
+        .file-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .file-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-meta {
+            font-size: 11px;
+            color: var(--text2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-actions {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .file-card:hover .file-actions { opacity: 1; }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .icon-btn.danger:hover { background: var(--danger); border-color: var(--danger); }
+        .icon-btn.play-btn:hover { background: #ef4444; border-color: #ef4444; }
+
+        /* Upload Panel */
+        .upload-overlay {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 400px;
+            max-width: 90vw;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: none;
+            overflow: hidden;
+        }
+
+        .upload-overlay.active {
+            display: block;
+            animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .upload-overlay-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface2);
+        }
+
+        .upload-overlay-body {
+            padding: 20px;
+        }
+
+        .upload-filename {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .upload-type-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .upload-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text2);
+            margin-top: 8px;
+        }
+
+        .chunk-info {
+            font-size: 10px;
+            color: var(--text2);
+            margin-top: 4px;
+            text-align: center;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            padding: 14px 20px;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 500;
+            font-size: 13px;
+            animation: toastIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            min-width: 280px;
+        }
+
+        .toast-success { background: rgba(16,185,129,0.95); }
+        .toast-error { background: rgba(239,68,68,0.95); }
+        .toast-info { background: rgba(124,58,237,0.95); }
+        .toast-warning { background: rgba(245,158,11,0.95); }
+
+        @keyframes toastIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .status-badge.connected { background: rgba(16,185,129,0.15); color: #34d399; }
+        .status-badge.disconnected { background: rgba(239,68,68,0.15); color: #f87171; }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.green { background: var(--success); }
+        .status-dot.red { background: var(--danger); }
+        .status-dot.yellow { background: var(--warning); }
+
+        /* Search */
+        .search-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-wrapper input {
+            width: 100%;
+            padding: 14px 18px 14px 48px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-wrapper input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text2);
+            font-size: 16px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+            color: var(--text2);
+        }
+
+        .empty-state i {
+            font-size: 80px;
+            opacity: 0.15;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        /* Video Player Modal */
+        .video-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .video-modal-content {
+            width: 90%;
+            max-width: 900px;
+            background: #000;
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .video-modal video {
+            width: 100%;
+            max-height: 80vh;
+        }
+
+        .video-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
             .config-grid { grid-template-columns: 1fr; }
             .files-grid { grid-template-columns: 1fr; }
+            .upload-overlay { left: 10px; right: 10px; bottom: 10px; width: auto; }
+            .drop-zone { padding: 40px 20px; }
         }
     </style>
 </head>
 <body>
+    <div class="toast-container" id="toastContainer"></div>
+
     <div class="container">
         <!-- Header -->
         <div class="header">
             <div class="logo">
                 <div class="logo-icon"><i class="fas fa-cloud"></i></div>
-                <div>
-                    <h1>TeleDrive</h1>
-                    <span>Cloud Storage</span>
+                <div class="logo-text">
+                    <h2>TeleDrive Pro</h2>
+                    <span>Large File Cloud Storage</span>
                 </div>
             </div>
-            <div style="display:flex;align-items:center;gap:12px;">
-                <span class="status"><span class="dot" id="statusDot"></span> <span id="statusText">Ready</span></span>
-                <button class="btn btn-primary" onclick="triggerUpload()"><i class="fas fa-upload"></i> Upload</button>
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-value" id="fileCount">0</div>
+                    <div class="stat-label">Files</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="storageUsed">0 B</div>
+                    <div class="stat-label">Storage</div>
+                </div>
+                <div class="stat-card">
+                    <span class="status-badge disconnected" id="connectionStatus">
+                        <span class="status-dot red"></span> Offline
+                    </span>
+                </div>
             </div>
         </div>
 
-        <!-- Configuration Card -->
-        <div class="config-card">
-            <h3><i class="fas fa-cog"></i> Bot Configuration</h3>
-            
-            <div class="info-box important" style="margin-bottom:16px;">
-                <strong>⚠️ CRITICAL STEPS:</strong><br>
-                1️⃣ Bot MUST be <strong>Administrator</strong> in the channel<br>
-                2️⃣ Use <strong>@getidsbot</strong> or <strong>@userinfobot</strong> to get exact Chat ID<br>
-                3️⃣ Chat ID must include <code>-100</code> prefix (e.g., <code>-1001234567890</code>)<br>
-                4️⃣ For username channels: use <code>@channelname</code><br>
+        <!-- Config -->
+        <div class="config-section">
+            <div class="config-header" onclick="document.getElementById('configBody').style.display=document.getElementById('configBody').style.display==='none'?'block':'none'">
+                <h3 style="font-size:16px;font-weight:600;"><i class="fas fa-cog"></i> Configuration</h3>
+                <i class="fas fa-chevron-down" style="color:var(--text2);"></i>
             </div>
-            
-            <div class="config-grid">
-                <div class="field">
-                    <label>🤖 Bot Token (from @BotFather)</label>
-                    <input type="text" id="botToken" placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz">
+            <div id="configBody">
+                <div class="config-grid">
+                    <div class="input-group">
+                        <label>Bot Token</label>
+                        <input type="text" id="botToken" placeholder="From @BotFather">
+                    </div>
+                    <div class="input-group">
+                        <label>Chat ID or @Username</label>
+                        <input type="text" id="chatId" placeholder="-100xxx or @channel or me">
+                    </div>
                 </div>
-                <div class="field">
-                    <label>📁 Chat ID or @Username</label>
-                    <input type="text" id="chatId" placeholder="-1001234567890 or @mychannel">
-                    <small style="color:#64748b;font-size:11px;">
-                        <i class="fas fa-lightbulb"></i> 
-                        Try: <a href="#" onclick="document.getElementById('chatId').value='@';return false;" style="color:#7c3aed;">@username</a> | 
-                        <a href="#" onclick="document.getElementById('chatId').value='-100';return false;" style="color:#7c3aed;">-100 ID</a> |
-                        <a href="#" onclick="document.getElementById('chatId').value='me';return false;" style="color:#7c3aed;">me (saved messages)</a>
-                    </small>
+                <div class="btn-row">
+                    <button class="btn btn-primary btn-sm" onclick="saveAndConnect()"><i class="fas fa-plug"></i> Connect</button>
+                    <button class="btn btn-success btn-sm" onclick="quickSetup()"><i class="fas fa-bolt"></i> Quick Setup (Saved Messages)</button>
+                    <button class="btn btn-secondary btn-sm" onclick="autoFindChat()"><i class="fas fa-search"></i> Auto-Find</button>
                 </div>
             </div>
-            
-            <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-                <button class="btn btn-primary btn-sm" onclick="saveAndConnect()">
-                    <i class="fas fa-plug"></i> Save & Connect
-                </button>
-                <button class="btn btn-success btn-sm" onclick="autoFindChat()">
-                    <i class="fas fa-search"></i> Auto-Find Chat
-                </button>
-                <button class="btn btn-secondary btn-sm" onclick="testWithSavedMessages()">
-                    <i class="fas fa-bookmark"></i> Test with Saved Messages
-                </button>
-                <button class="btn btn-secondary btn-sm" onclick="toggleDebug()">
-                    <i class="fas fa-bug"></i> Debug
-                </button>
-            </div>
-            
-            <div class="debug-info" id="debugInfo"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="btn-row" style="margin-bottom:20px;">
+            <button class="btn btn-primary btn-lg" onclick="triggerUpload()">
+                <i class="fas fa-upload"></i> Upload Files
+            </button>
+            <button class="btn btn-secondary" onclick="createFolder()">
+                <i class="fas fa-folder-plus"></i> New Folder
+            </button>
+            <button class="btn btn-secondary" onclick="refreshFiles()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
         </div>
 
         <!-- Drop Zone -->
         <div class="drop-zone" id="dropZone">
-            <i class="fas fa-cloud-upload-alt"></i>
-            <h3>Drag & Drop Files Here</h3>
-            <p>or click to browse • Max 10 GB per file</p>
+            <div class="drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+            <div class="drop-text">Drop Large Files Here</div>
+            <div class="drop-subtext">Videos streamed • Documents downloadable • Up to 2GB per chunk</div>
+            <div class="file-type-badges">
+                <span class="type-badge video"><i class="fas fa-play"></i> Videos (Stream)</span>
+                <span class="type-badge document"><i class="fas fa-file-alt"></i> Documents</span>
+                <span class="type-badge image"><i class="fas fa-image"></i> Images</span>
+                <span class="type-badge archive"><i class="fas fa-file-archive"></i> Archives</span>
+                <span class="type-badge all"><i class="fas fa-check-circle"></i> All Files Supported</span>
+            </div>
         </div>
 
         <!-- Search -->
-        <div style="position:relative;margin-bottom:20px;">
-            <i class="fas fa-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#94a3b8;"></i>
-            <input type="text" id="searchInput" placeholder="Search files..." oninput="renderFiles()"
-                style="width:100%;padding:12px 16px 12px 42px;border:1px solid var(--border);border-radius:24px;font-size:14px;outline:none;">
+        <div class="search-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search files..." oninput="renderFiles()">
         </div>
 
-        <!-- Files -->
+        <!-- Files Container -->
         <div id="filesContainer">
-            <div style="text-align:center;padding:60px;color:var(--text2);">
-                <i class="fas fa-inbox" style="font-size:64px;opacity:0.2;display:block;margin-bottom:16px;"></i>
-                <p>Configure your bot and start uploading!</p>
+            <div class="empty-state">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h3>Your Drive is Empty</h3>
+                <p>Upload videos, documents, images, and more!</p>
             </div>
         </div>
     </div>
 
-    <input type="file" id="fileInput" multiple style="display:none" onchange="handleFiles(event)">
-    
-    <!-- Upload Panel -->
-    <div class="upload-panel" id="uploadPanel">
-        <div class="upload-panel-header">
-            <span><i class="fas fa-upload"></i> Uploading</span>
-            <button class="icon-btn" onclick="cancelUpload()" style="width:28px;height:28px;"><i class="fas fa-times"></i></button>
+    <input type="file" id="fileInput" multiple style="display:none" onchange="handleFileSelect(event)">
+
+    <!-- Upload Overlay -->
+    <div class="upload-overlay" id="uploadOverlay">
+        <div class="upload-overlay-header">
+            <span style="font-weight:600;"><i class="fas fa-upload" style="color:var(--accent2);"></i> Uploading</span>
+            <button class="icon-btn danger" onclick="cancelUpload()" style="width:28px;height:28px;"><i class="fas fa-times"></i></button>
         </div>
-        <div class="upload-panel-body">
-            <div id="uploadName" style="font-weight:500;margin-bottom:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">-</div>
-            <div class="progress-bar"><div class="progress-fill" id="uploadBar" style="width:0%"></div></div>
-            <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:#64748b;">
-                <span id="uploadPct">0%</span><span id="uploadSpeed">-</span>
+        <div class="upload-overlay-body">
+            <div class="upload-filename" id="uploadName">-</div>
+            <span class="upload-type-badge" id="uploadTypeBadge">FILE</span>
+            <div class="progress-bar">
+                <div class="progress-fill" id="uploadProgressBar" style="width:0%"></div>
             </div>
+            <div class="upload-stats">
+                <span id="uploadPercent">0%</span>
+                <span id="uploadSpeed">-</span>
+            </div>
+            <div class="chunk-info" id="chunkInfo"></div>
         </div>
     </div>
-
-    <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        // Pre-configured API credentials
+        // ============ CONFIGURATION ============
         const API_ID = 31490201;
         const API_HASH = '7da61fca1ea2b960c8a881099e2a0b90';
-        const MAX_SIZE = 10 * 1024 * 1024 * 1024;
-        
-        let files = [], xhrUpload = null, uploadStart = 0, debugMode = false;
+        const TELEGRAM_MAX_SIZE = 2 * 1024 * 1024 * 1024; // 2GB for Bot API
+        const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB chunks
 
-        // Init
+        // ============ STATE ============
+        let files = [];
+        let xhrUpload = null;
+        let uploadStartTime = 0;
+        let currentUploadController = null;
+
+        // ============ INIT ============
         document.addEventListener('DOMContentLoaded', () => {
-            loadConfig(); loadFiles(); setupDnD(); updateStatus();
+            loadConfig();
+            loadFiles();
+            setupDragDrop();
+            updateStats();
         });
 
-        function debug(msg) {
-            if (!debugMode) return;
-            const el = document.getElementById('debugInfo');
-            el.style.display = 'block';
-            el.innerHTML += `<div style="color:#10b981;">[${new Date().toLocaleTimeString()}] ${msg}</div>`;
-            el.scrollTop = el.scrollHeight;
+        // ============ STORAGE ============
+        function getConfig() {
+            return {
+                token: localStorage.td_token || '',
+                chat: localStorage.td_chat || ''
+            };
         }
 
-        function toggleDebug() {
-            debugMode = !debugMode;
-            const el = document.getElementById('debugInfo');
-            el.style.display = debugMode ? 'block' : 'none';
-            if (debugMode) { el.innerHTML = ''; debug('Debug mode enabled'); }
-            toast(debugMode ? 'Debug mode ON' : 'Debug mode OFF', 'info');
+        function setConfig(token, chat) {
+            localStorage.td_token = token;
+            localStorage.td_chat = chat;
         }
 
-        function getCfg() {
-            return { token: localStorage.td_token || '', chat: localStorage.td_chat || '' };
-        }
-        function setCfg(t, c) { 
-            localStorage.td_token = t; 
-            localStorage.td_chat = c;
-            debug(`Config saved: token=${t.substring(0,10)}..., chat=${c}`);
-        }
         function loadConfig() {
-            const c = getCfg();
+            const c = getConfig();
             document.getElementById('botToken').value = c.token;
             document.getElementById('chatId').value = c.chat;
         }
 
         function loadFiles() {
-            try { const r = localStorage.td_files; if (r) files = JSON.parse(r); }
-            catch(e) { files = []; }
+            try {
+                const raw = localStorage.td_files;
+                if (raw) files = JSON.parse(raw);
+            } catch (e) {
+                files = [];
+            }
             renderFiles();
         }
+
         function saveFiles() {
-            const s = files.map(({localUrl,...r}) => r);
-            try { localStorage.td_files = JSON.stringify(s); } catch(e) {}
-        }
-
-        // ============ THE FIX: Better Chat ID Handling ============
-        
-        async function saveAndConnect() {
-            const t = document.getElementById('botToken').value.trim();
-            let c = document.getElementById('chatId').value.trim();
-            
-            if (!t || !c) return toast('Enter both fields','warning');
-            
-            debug(`Testing connection with token: ${t.substring(0,15)}...`);
-            
-            // First test the bot token
+            const toSave = files.map(({ localUrl, blob, ...rest }) => rest);
             try {
-                const r = await fetch(`https://api.telegram.org/bot${t}/getMe`);
-                const d = await r.json();
-                if (!d.ok) {
-                    updateStatus('red','Invalid token');
-                    debug(`Bot token error: ${d.description}`);
-                    return toast('Invalid bot token: ' + d.description, 'error');
-                }
-                debug(`Bot verified: @${d.result.username}`);
-                toast(`Bot connected: @${d.result.username}`, 'success');
-            } catch(e) {
-                updateStatus('red','Connection failed');
-                debug(`Connection error: ${e.message}`);
-                return toast('Cannot connect to Telegram API', 'error');
+                localStorage.td_files = JSON.stringify(toSave);
+            } catch (e) {
+                console.warn('Storage quota exceeded');
             }
-            
-            // Now find the correct chat
-            await findAndSaveChat(t, c);
         }
 
-        async function findAndSaveChat(token, chatInput) {
-            let chatId = chatInput;
-            debug(`Finding chat: "${chatId}"`);
+        // ============ CONNECTION ============
+        async function quickSetup() {
+            const token = document.getElementById('botToken').value.trim();
+            if (!token) return toast('Enter Bot Token first', 'warning');
             
-            // If it's "me", use saved messages
-            if (chatId.toLowerCase() === 'me') {
-                debug('Using Saved Messages');
-                setCfg(token, 'me');
-                document.getElementById('chatId').value = 'me';
-                updateStatus('green','Saved Messages');
-                toast('Using Saved Messages! Upload ready.', 'success');
-                return;
-            }
-            
-            // Try different formats
-            const formats = [];
-            
-            // If it's a username
-            if (chatId.startsWith('@')) {
-                formats.push(chatId);
-                formats.push(chatId.substring(1));
-            }
-            // If it starts with -100 already
-            else if (chatId.startsWith('-100')) {
-                formats.push(chatId);
-                formats.push(chatId.replace('-100', '-'));
-                formats.push(chatId.replace('-100', ''));
-            }
-            // If it starts with -
-            else if (chatId.startsWith('-')) {
-                formats.push('-100' + chatId.substring(1));
-                formats.push(chatId);
-            }
-            // Plain number or text
-            else {
-                formats.push('-100' + chatId);
-                formats.push('-' + chatId);
-                formats.push(chatId);
-                formats.push('@' + chatId);
-            }
-            
-            debug(`Trying ${formats.length} chat ID formats: ${formats.join(', ')}`);
-            
-            let foundChat = null;
-            
-            for (const testId of formats) {
-                try {
-                    debug(`Testing chat_id: ${testId}`);
-                    const r = await fetch(`https://api.telegram.org/bot${token}/getChat?chat_id=${encodeURIComponent(testId)}`);
-                    const d = await r.json();
-                    
-                    if (d.ok) {
-                        const chat = d.result;
-                        const finalId = chat.type === 'private' ? chat.id.toString() : 
-                                       chat.type === 'channel' ? chat.id.toString() : chat.id.toString();
-                        
-                        foundChat = {
-                            id: finalId,
-                            title: chat.title || chat.first_name || chat.username || 'Chat',
-                            type: chat.type,
-                            username: chat.username || ''
-                        };
-                        
-                        debug(`✅ FOUND: "${foundChat.title}" (${foundChat.type}) ID: ${foundChat.id}`);
-                        break;
-                    } else {
-                        debug(`❌ Failed for ${testId}: ${d.description}`);
-                    }
-                } catch(e) {
-                    debug(`❌ Error for ${testId}: ${e.message}`);
+            try {
+                const r = await fetch(`https://api.telegram.org/bot${token}/getMe`);
+                const d = await r.json();
+                if (d.ok) {
+                    document.getElementById('chatId').value = 'me';
+                    setConfig(token, 'me');
+                    updateConnectionStatus(true);
+                    toast('Connected to Saved Messages! Ready to upload.', 'success');
+                } else {
+                    toast('Invalid token: ' + d.description, 'error');
                 }
+            } catch (e) {
+                toast('Connection failed', 'error');
             }
+        }
+
+        async function saveAndConnect() {
+            const token = document.getElementById('botToken').value.trim();
+            const chat = document.getElementById('chatId').value.trim();
             
-            if (foundChat) {
-                document.getElementById('chatId').value = foundChat.id;
-                setCfg(token, foundChat.id);
-                updateStatus('green', foundChat.title);
-                toast(`Connected to: ${foundChat.title} (${foundChat.type})`, 'success');
-                debug(`✅ Final chat ID: ${foundChat.id} - ${foundChat.title}`);
-            } else {
-                // Fallback: try sendMessage to see if any format works
-                debug('No chat found via getChat, trying sendMessage...');
-                let msgSuccess = false;
-                
-                for (const testId of formats) {
-                    try {
-                        const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-                            method: 'POST',
-                            headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({
-                                chat_id: testId,
-                                text: '✅ TeleDrive connected successfully!',
-                                disable_notification: true
-                            })
-                        });
-                        const d = await r.json();
-                        if (d.ok) {
-                            const msgChatId = d.result.chat.id.toString();
-                            document.getElementById('chatId').value = msgChatId;
-                            setCfg(token, msgChatId);
-                            updateStatus('green', d.result.chat.title || d.result.chat.username || msgChatId);
-                            toast(`Connected! Chat ID: ${msgChatId}`, 'success');
-                            debug(`✅ Connected via sendMessage! Chat ID: ${msgChatId}`);
-                            msgSuccess = true;
-                            
-                            // Delete the test message
-                            try {
-                                await fetch(`https://api.telegram.org/bot${token}/deleteMessage`, {
-                                    method: 'POST',
-                                    headers: {'Content-Type': 'application/json'},
-                                    body: JSON.stringify({chat_id: msgChatId, message_id: d.result.message_id})
-                                });
-                            } catch(e) {}
-                            
-                            break;
-                        } else {
-                            debug(`sendMessage failed for ${testId}: ${d.description}`);
-                        }
-                    } catch(e) {
-                        debug(`sendMessage error for ${testId}: ${e.message}`);
-                    }
-                }
-                
-                if (!msgSuccess) {
-                    updateStatus('red','Chat not found');
-                    debug('❌ All attempts failed');
-                    toast('Could not find chat. Make sure bot is ADMIN in the channel!', 'error');
-                    
-                    // Show helpful message
-                    alert(
-                        '❌ Chat Not Found\n\n' +
-                        'Please verify:\n' +
-                        '1. Your bot is added to the channel\n' +
-                        '2. Bot has ADMINISTRATOR permissions\n' +
-                        '3. You\'re using the correct Chat ID\n\n' +
-                        'Get Chat ID:\n' +
-                        '• Forward a channel message to @getidsbot\n' +
-                        '• Or use @username of a public channel\n' +
-                        '• Or type "me" for Saved Messages\n\n' +
-                        'Debug info has been logged. Click "Debug" to view.'
-                    );
-                }
+            if (!token || !chat) return toast('Fill all fields', 'warning');
+
+            try {
+                const r = await fetch(`https://api.telegram.org/bot${token}/getMe`);
+                const d = await r.json();
+                if (!d.ok) return toast('Invalid token', 'error');
+
+                setConfig(token, chat);
+                updateConnectionStatus(true);
+                toast(`Connected! Bot: @${d.result.username}`, 'success');
+            } catch (e) {
+                toast('Connection failed', 'error');
             }
         }
 
         async function autoFindChat() {
-            const t = document.getElementById('botToken').value.trim();
-            if (!t) return toast('Enter bot token first','warning');
-            
-            debug('Auto-finding chats...');
-            toast('Searching for available chats...', 'info');
-            
-            // Check bot's updates to find chats
+            const token = document.getElementById('botToken').value.trim();
+            if (!token) return toast('Enter token first', 'warning');
+
             try {
-                const r = await fetch(`https://api.telegram.org/bot${t}/getUpdates?limit=100`);
+                const r = await fetch(`https://api.telegram.org/bot${token}/getUpdates?limit=50`);
                 const d = await r.json();
-                
                 if (d.ok && d.result.length > 0) {
                     const chats = new Map();
-                    d.result.forEach(update => {
-                        const msg = update.message || update.channel_post;
-                        if (msg && msg.chat) {
-                            const chat = msg.chat;
-                            chats.set(chat.id.toString(), {
-                                id: chat.id.toString(),
-                                title: chat.title || chat.first_name || 'Chat',
-                                type: chat.type
+                    d.result.forEach(u => {
+                        const msg = u.message || u.channel_post;
+                        if (msg?.chat) {
+                            chats.set(msg.chat.id.toString(), {
+                                id: msg.chat.id.toString(),
+                                title: msg.chat.title || msg.chat.first_name || 'Chat'
                             });
                         }
                     });
                     
-                    if (chats.size > 0) {
-                        debug(`Found ${chats.size} chat(s) from updates`);
-                        const chatList = Array.from(chats.values());
-                        
-                        // If only one chat, use it
-                        if (chatList.length === 1) {
-                            const chat = chatList[0];
-                            document.getElementById('chatId').value = chat.id;
-                            setCfg(t, chat.id);
-                            updateStatus('green', chat.title);
-                            toast(`Found: ${chat.title} (${chat.id})`, 'success');
-                            debug(`Auto-selected: ${chat.id} - ${chat.title}`);
-                        } else {
-                            // Show list
-                            let msg = 'Found chats:\n\n';
-                            chatList.forEach((c, i) => {
-                                msg += `${i+1}. ${c.title} (${c.type})\n   ID: ${c.id}\n\n`;
-                            });
-                            msg += 'Copy the ID you want and paste in the Chat ID field.';
-                            alert(msg);
-                            debug('Multiple chats found, user needs to select');
-                            toast('Multiple chats found. Check alert.', 'info');
-                        }
+                    if (chats.size === 1) {
+                        const chat = [...chats.values()][0];
+                        document.getElementById('chatId').value = chat.id;
+                        setConfig(token, chat.id);
+                        updateConnectionStatus(true);
+                        toast(`Found: ${chat.title}`, 'success');
+                    } else if (chats.size > 1) {
+                        const list = [...chats.values()].map(c => `${c.title}: ${c.id}`).join('\n');
+                        alert(`Multiple chats found:\n\n${list}\n\nCopy the ID you want.`);
                     } else {
-                        debug('No chats found in updates');
-                        toast('No chats found. Send a message in your channel first.', 'warning');
+                        toast('No chats found. Try Quick Setup.', 'warning');
                     }
                 } else {
-                    debug('No updates available');
-                    toast('No messages found. Bot needs to receive messages first.', 'warning');
+                    toast('No messages. Send a message in your channel first.', 'warning');
                 }
-            } catch(e) {
-                debug(`Auto-find error: ${e.message}`);
-                toast('Could not search for chats', 'error');
+            } catch (e) {
+                toast('Search failed', 'error');
             }
         }
 
-        async function testWithSavedMessages() {
-            const t = document.getElementById('botToken').value.trim();
-            if (!t) return toast('Enter bot token first','warning');
+        function updateConnectionStatus(connected) {
+            const el = document.getElementById('connectionStatus');
+            if (connected) {
+                el.className = 'status-badge connected';
+                el.innerHTML = '<span class="status-dot green"></span> Connected';
+            } else {
+                el.className = 'status-badge disconnected';
+                el.innerHTML = '<span class="status-dot red"></span> Offline';
+            }
+        }
+
+        // ============ DRAG & DROP ============
+        function setupDragDrop() {
+            const zone = document.getElementById('dropZone');
             
-            debug('Testing with Saved Messages...');
-            
-            try {
-                // Test if bot can send to saved messages
-                const r = await fetch(`https://api.telegram.org/bot${t}/getMe`);
-                const d = await r.json();
-                if (!d.ok) return toast('Invalid token','error');
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
+                zone.addEventListener(ev, e => e.preventDefault());
+                document.body.addEventListener(ev, e => e.preventDefault());
+            });
+
+            ['dragenter', 'dragover'].forEach(ev => {
+                zone.addEventListener(ev, () => zone.classList.add('drag-over'));
+            });
+
+            ['dragleave', 'drop'].forEach(ev => {
+                zone.addEventListener(ev, () => zone.classList.remove('drag-over'));
+            });
+
+            zone.addEventListener('drop', e => {
+                if (e.dataTransfer.files.length) processFiles(e.dataTransfer.files);
+            });
+
+            zone.addEventListener('click', () => document.getElementById('fileInput').click());
+
+            // Global drop
+            document.body.addEventListener('drop', e => {
+                const dt = e.dataTransfer;
+                if (dt.files.length && !e.target.closest('#filesContainer')) {
+                    processFiles(dt.files);
+                }
+            });
+        }
+
+        function triggerUpload() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleFileSelect(e) {
+            if (e.target.files.length) processFiles(e.target.files);
+            e.target.value = '';
+        }
+
+        // ============ FILE PROCESSING ============
+        function processFiles(fileList) {
+            const config = getConfig();
+            if (!config.token || !config.chat) {
+                toast('Configure bot first! Use Quick Setup.', 'warning');
+                return;
+            }
+
+            Array.from(fileList).forEach(file => {
+                const fileType = getFileCategory(file);
                 
-                // Use "me" as chat ID for saved messages
-                document.getElementById('chatId').value = 'me';
-                setCfg(t, 'me');
-                updateStatus('green','Saved Messages');
-                toast('Using Saved Messages! Upload should work now.', 'success');
-                debug('Set to Saved Messages (me)');
-            } catch(e) {
-                debug(`Error: ${e.message}`);
-                toast('Failed','error');
-            }
+                if (file.size > TELEGRAM_MAX_SIZE) {
+                    // Large file - use chunked upload
+                    toast(`${file.name} is large (${formatSize(file.size)}). Using chunked upload...`, 'info');
+                    uploadLargeFile(file, fileType);
+                } else {
+                    // Normal upload
+                    uploadFile(file, fileType);
+                }
+            });
         }
 
-        // ============ FILE UPLOAD WITH FIXED CHAT ID ============
-        
-        async function upload(file) {
-            const c = getCfg();
-            if (!c.token || !c.chat) return toast('Configure first','warning');
-            
-            const pnl = document.getElementById('uploadPanel');
-            const bar = document.getElementById('uploadBar');
-            const pct = document.getElementById('uploadPct');
-            const spd = document.getElementById('uploadSpeed');
-            const nm = document.getElementById('uploadName');
-            
-            pnl.classList.add('active'); nm.textContent=file.name;
-            bar.style.width='0%'; pct.textContent='0%'; spd.textContent='Preparing...';
-            uploadStart=Date.now();
+        // ============ NORMAL UPLOAD (≤2GB) ============
+        async function uploadFile(file, fileType) {
+            const config = getConfig();
+            const overlay = document.getElementById('uploadOverlay');
+            const progressBar = document.getElementById('uploadProgressBar');
+            const percentEl = document.getElementById('uploadPercent');
+            const speedEl = document.getElementById('uploadSpeed');
+            const nameEl = document.getElementById('uploadName');
+            const typeBadge = document.getElementById('uploadTypeBadge');
+            const chunkInfo = document.getElementById('chunkInfo');
 
-            // Use the chat ID as-is (already validated)
-            const chatId = c.chat;
-            debug(`Uploading to chat_id: ${chatId}`);
+            overlay.classList.add('active');
+            nameEl.textContent = file.name;
+            progressBar.style.width = '0%';
+            percentEl.textContent = '0%';
+            speedEl.textContent = 'Preparing...';
+            chunkInfo.textContent = '';
+            
+            // Set type badge
+            typeBadge.textContent = fileType.toUpperCase();
+            typeBadge.className = 'upload-type-badge ' + fileType;
 
-            const fd = new FormData();
-            fd.append('chat_id', chatId);
-            fd.append('document', file);
-            fd.append('caption', `📁 ${file.name} • ${fmtSize(file.size)}`);
-            fd.append('disable_notification', 'true');
+            uploadStartTime = Date.now();
+
+            // Determine upload method based on file type
+            const method = getUploadMethod(file, fileType);
+            
+            const formData = new FormData();
+            formData.append('chat_id', config.chat);
+            formData.append(method.field, file);
+            formData.append('caption', `${getFileEmoji(fileType)} ${file.name}\n📏 ${formatSize(file.size)}`);
+            formData.append('disable_notification', 'true');
+            
+            // For videos, add streaming support
+            if (fileType === 'video') {
+                formData.append('supports_streaming', 'true');
+            }
 
             xhrUpload = new XMLHttpRequest();
+
             try {
-                const res = await new Promise((rs,rj)=>{
-                    xhrUpload.upload.onprogress=e=>{
-                        if(e.lengthComputable){
-                            const p=Math.round(e.loaded/e.total*100);
-                            bar.style.width=p+'%'; pct.textContent=p+'%';
-                            const el=(Date.now()-uploadStart)/1000;
-                            spd.textContent=el>0?fmtSize(e.loaded/el)+'/s':'-';
+                const result = await new Promise((resolve, reject) => {
+                    xhrUpload.upload.onprogress = (e) => {
+                        if (e.lengthComputable) {
+                            const pct = Math.round((e.loaded / e.total) * 100);
+                            progressBar.style.width = pct + '%';
+                            percentEl.textContent = pct + '%';
+                            const elapsed = (Date.now() - uploadStartTime) / 1000;
+                            const speed = elapsed > 0 ? e.loaded / elapsed : 0;
+                            speedEl.textContent = formatSize(speed) + '/s';
                         }
                     };
-                    xhrUpload.onload=()=>{
-                        try{
-                            const resp = JSON.parse(xhrUpload.responseText);
-                            debug(`Upload response: ${JSON.stringify(resp).substring(0,200)}`);
-                            rs(resp);
-                        }catch{ rj(new Error('Invalid response'))}
+
+                    xhrUpload.onload = () => {
+                        try { resolve(JSON.parse(xhrUpload.responseText)); }
+                        catch { reject(new Error('Invalid response')); }
                     };
-                    xhrUpload.onerror=()=>rj(new Error('Network error'));
-                    xhrUpload.onabort=()=>rj(new Error('Cancelled'));
-                    xhrUpload.open('POST',`https://api.telegram.org/bot${c.token}/sendDocument`);
-                    xhrUpload.send(fd);
+                    xhrUpload.onerror = () => reject(new Error('Network error'));
+                    xhrUpload.onabort = () => reject(new Error('Cancelled'));
+
+                    xhrUpload.open('POST', `https://api.telegram.org/bot${config.token}/${method.endpoint}`);
+                    xhrUpload.send(formData);
                 });
 
-                if(res.ok){
-                    const d=res.result.document;
-                    files.unshift({
-                        id:d.file_id,uniqueId:d.file_unique_id,name:file.name,
-                        size:file.size,mime:file.type||d.mime_type,
-                        type:getType(file.name),date:new Date().toISOString(),
-                        messageId:res.result.message_id,chatId:res.result.chat.id,storage:'cloud'
-                    });
-                    saveFiles(); renderFiles();
-                    toast(`${file.name} uploaded!`,'success');
-                    debug(`✅ Upload successful: ${file.name}`);
-                } else {
-                    debug(`❌ Upload failed: ${res.description}`);
+                if (result.ok) {
+                    const msg = result.result;
+                    const fileId = getFileIdFromResult(msg, method.field);
+                    const fileSize = getFileSizeFromResult(msg, method.field);
                     
-                    if (res.description?.includes('chat not found')) {
-                        toast('Chat not found! Click "Auto-Find Chat" or "Test with Saved Messages"','error');
-                        // Offer to try saved messages
-                        if (confirm('Chat not found. Would you like to use "Saved Messages" instead?')) {
-                            await testWithSavedMessages();
-                            // Retry upload
-                            if (confirm('Retry upload now?')) {
-                                await upload(file);
-                            }
+                    files.unshift({
+                        id: fileId,
+                        uniqueId: msg[method.field]?.file_unique_id || Date.now().toString(),
+                        name: file.name,
+                        size: fileSize || file.size,
+                        mime: file.type,
+                        type: fileType,
+                        date: new Date().toISOString(),
+                        messageId: msg.message_id,
+                        chatId: msg.chat.id,
+                        storage: 'cloud',
+                        streamingUrl: fileType === 'video' ? `https://api.telegram.org/file/bot${config.token}/${msg[method.field]?.file_path}` : null
+                    });
+                    
+                    saveFiles();
+                    renderFiles();
+                    updateStats();
+                    toast(`${file.name} uploaded successfully!`, 'success');
+                } else {
+                    throw new Error(result.description || 'Upload failed');
+                }
+            } catch (err) {
+                if (err.message !== 'Cancelled') {
+                    toast(`Upload failed: ${err.message}`, 'error');
+                    // Save locally
+                    saveLocally(file, fileType);
+                }
+            } finally {
+                xhrUpload = null;
+                setTimeout(() => overlay.classList.remove('active'), 1500);
+            }
+        }
+
+        // ============ LARGE FILE UPLOAD (>2GB) ============
+        async function uploadLargeFile(file, fileType) {
+            const config = getConfig();
+            const overlay = document.getElementById('uploadOverlay');
+            const progressBar = document.getElementById('uploadProgressBar');
+            const percentEl = document.getElementById('uploadPercent');
+            const speedEl = document.getElementById('uploadSpeed');
+            const nameEl = document.getElementById('uploadName');
+            const typeBadge = document.getElementById('uploadTypeBadge');
+            const chunkInfo = document.getElementById('chunkInfo');
+
+            overlay.classList.add('active');
+            nameEl.textContent = file.name;
+            progressBar.style.width = '0%';
+            percentEl.textContent = '0%';
+            speedEl.textContent = 'Preparing chunks...';
+            
+            typeBadge.textContent = `LARGE ${fileType.toUpperCase()}`;
+            typeBadge.className = 'upload-type-badge ' + fileType;
+            typeBadge.style.background = 'rgba(245,158,11,0.2)';
+            typeBadge.style.color = '#fbbf24';
+
+            uploadStartTime = Date.now();
+            
+            const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+            chunkInfo.textContent = `Splitting into ${totalChunks} chunks of ${formatSize(CHUNK_SIZE)}...`;
+            
+            toast(`Large file detected! Splitting into ${totalChunks} parts...`, 'info');
+
+            const method = getUploadMethod(file, fileType);
+            let uploadedParts = [];
+            let totalUploaded = 0;
+
+            for (let i = 0; i < totalChunks; i++) {
+                const start = i * CHUNK_SIZE;
+                const end = Math.min(start + CHUNK_SIZE, file.size);
+                const chunk = file.slice(start, end, file.type);
+                
+                chunkInfo.textContent = `Uploading part ${i + 1} of ${totalChunks}...`;
+                
+                const partFormData = new FormData();
+                partFormData.append('chat_id', config.chat);
+                partFormData.append(method.field, new File([chunk], `${file.name}.part${i + 1}`, { type: file.type }));
+                partFormData.append('caption', `📦 ${file.name} - Part ${i + 1}/${totalChunks}`);
+                partFormData.append('disable_notification', 'true');
+                
+                if (fileType === 'video') {
+                    partFormData.append('supports_streaming', 'true');
+                }
+
+                try {
+                    const partResult = await uploadChunk(config.token, method.endpoint, partFormData, (loaded, total) => {
+                        const partProgress = (loaded / total) * 100;
+                        const overallProgress = ((totalUploaded + loaded) / file.size) * 100;
+                        progressBar.style.width = overallProgress + '%';
+                        percentEl.textContent = Math.round(overallProgress) + '%';
+                        
+                        const elapsed = (Date.now() - uploadStartTime) / 1000;
+                        const speed = elapsed > 0 ? (totalUploaded + loaded) / elapsed : 0;
+                        speedEl.textContent = formatSize(speed) + '/s';
+                    });
+
+                    if (partResult.ok) {
+                        uploadedParts.push({
+                            partNumber: i + 1,
+                            fileId: getFileIdFromResult(partResult, method.field),
+                            messageId: partResult.message_id,
+                            size: chunk.size
+                        });
+                        totalUploaded += chunk.size;
+                    } else {
+                        throw new Error(`Part ${i + 1} failed: ${partResult.description}`);
+                    }
+                } catch (err) {
+                    toast(`Chunk upload failed: ${err.message}`, 'error');
+                    chunkInfo.textContent = `Failed at part ${i + 1}`;
+                    return;
+                }
+            }
+
+            // All parts uploaded - create manifest
+            const manifest = {
+                originalName: file.name,
+                originalSize: file.size,
+                fileType: fileType,
+                mime: file.type,
+                totalParts: totalChunks,
+                parts: uploadedParts,
+                uploadDate: new Date().toISOString()
+            };
+
+            files.unshift({
+                id: 'large_' + Date.now(),
+                uniqueId: 'large_' + Date.now(),
+                name: file.name,
+                size: file.size,
+                mime: file.type,
+                type: fileType,
+                date: new Date().toISOString(),
+                isLargeFile: true,
+                manifest: manifest,
+                storage: 'cloud',
+                parts: uploadedParts
+            });
+
+            saveFiles();
+            renderFiles();
+            updateStats();
+            
+            chunkInfo.textContent = '';
+            toast(`${file.name} uploaded in ${totalChunks} parts!`, 'success');
+            
+            setTimeout(() => overlay.classList.remove('active'), 2000);
+        }
+
+        function uploadChunk(token, endpoint, formData, onProgress) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable && onProgress) {
+                        onProgress(e.loaded, e.total);
+                    }
+                };
+
+                xhr.onload = () => {
+                    try { resolve(JSON.parse(xhr.responseText)); }
+                    catch { reject(new Error('Invalid response')); }
+                };
+                xhr.onerror = () => reject(new Error('Network error'));
+                xhr.onabort = () => reject(new Error('Cancelled'));
+
+                xhr.open('POST', `https://api.telegram.org/bot${token}/${endpoint}`);
+                xhr.send(formData);
+            });
+        }
+
+        // ============ STREAMING VIDEO PLAYER ============
+        function streamVideo(fileId) {
+            const file = files.find(f => f.id === fileId);
+            if (!file) return;
+
+            const config = getConfig();
+            if (!config.token) return toast('Configure bot token', 'warning');
+
+            // Create video player modal
+            const modal = document.createElement('div');
+            modal.className = 'video-modal';
+            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+            
+            modal.innerHTML = `
+                <div class="video-modal-content">
+                    <video controls autoplay style="width:100%;max-height:80vh;background:#000;">
+                        <source src="https://api.telegram.org/file/bot${config.token}/${file.streamingUrl || ''}" type="${file.mime || 'video/mp4'}">
+                        Your browser does not support video playback.
+                    </video>
+                </div>
+                <button class="video-modal-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // If it's a large file, fetch streaming URL
+            if (file.isLargeFile && file.parts) {
+                fetch(`https://api.telegram.org/bot${config.token}/getFile?file_id=${file.parts[0].fileId}`)
+                    .then(r => r.json())
+                    .then(d => {
+                        if (d.ok) {
+                            const video = modal.querySelector('video');
+                            video.src = `https://api.telegram.org/file/bot${config.token}/${d.result.file_path}`;
+                            video.load();
+                            video.play();
+                        }
+                    })
+                    .catch(() => toast('Could not load video', 'error'));
+            }
+        }
+
+        // ============ DOWNLOAD ============
+        async function downloadFile(fileId) {
+            const file = files.find(f => f.id === fileId);
+            if (!file) return;
+
+            if (file.isLargeFile && file.parts) {
+                // Download all parts and combine
+                toast('Large file - downloading parts...', 'info');
+                downloadLargeFile(file);
+                return;
+            }
+
+            if (file.storage === 'local' && file.localUrl) {
+                const a = document.createElement('a');
+                a.href = file.localUrl;
+                a.download = file.name;
+                a.click();
+                return;
+            }
+
+            const config = getConfig();
+            if (!config.token) return toast('Configure bot', 'warning');
+
+            try {
+                const r = await fetch(`https://api.telegram.org/bot${config.token}/getFile?file_id=${file.id}`);
+                const d = await r.json();
+                if (d.ok) {
+                    const url = `https://api.telegram.org/file/bot${config.token}/${d.result.file_path}`;
+                    
+                    if (file.type === 'video') {
+                        // For videos, offer both stream and download
+                        if (confirm('Open video player to stream, or click Cancel to download?')) {
+                            streamVideo(fileId);
+                        } else {
+                            window.open(url, '_blank');
                         }
                     } else {
-                        throw new Error(res.description||'Failed');
+                        window.open(url, '_blank');
                     }
+                    toast('Download started', 'success');
+                } else {
+                    throw new Error(d.description);
                 }
-            } catch(e) {
-                if(e.message!=='Cancelled'){
-                    debug(`❌ Upload error: ${e.message}`);
-                    toast(`Upload failed: ${e.message}`,'error');
-                    files.unshift({
-                        id:'local_'+Date.now(),uniqueId:'local_'+Date.now(),
-                        name:file.name,size:file.size,mime:file.type,
-                        type:getType(file.name),date:new Date().toISOString(),
-                        localUrl:URL.createObjectURL(file),storage:'local'
+            } catch (e) {
+                toast(`Download failed: ${e.message}`, 'error');
+            }
+        }
+
+        async function downloadLargeFile(file) {
+            const config = getConfig();
+            const parts = file.parts;
+            const chunks = [];
+            
+            for (let i = 0; i < parts.length; i++) {
+                const part = parts[i];
+                try {
+                    const r = await fetch(`https://api.telegram.org/bot${config.token}/getFile?file_id=${part.fileId}`);
+                    const d = await r.json();
+                    if (d.ok) {
+                        const url = `https://api.telegram.org/file/bot${config.token}/${d.result.file_path}`;
+                        const resp = await fetch(url);
+                        const blob = await resp.blob();
+                        chunks.push(blob);
+                    }
+                } catch (e) {
+                    toast(`Failed to download part ${i + 1}`, 'error');
+                    return;
+                }
+            }
+
+            // Combine all chunks
+            const combinedBlob = new Blob(chunks, { type: file.mime });
+            const url = URL.createObjectURL(combinedBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.name;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast('Large file downloaded!', 'success');
+        }
+
+        // ============ DELETE ============
+        async function deleteFile(fileId) {
+            const idx = files.findIndex(f => f.id === fileId);
+            if (idx === -1) return;
+            if (!confirm(`Delete "${files[idx].name}"?`)) return;
+
+            const file = files[idx];
+            const config = getConfig();
+
+            // Delete all parts for large files
+            if (file.isLargeFile && file.parts) {
+                for (const part of file.parts) {
+                    try {
+                        await fetch(`https://api.telegram.org/bot${config.token}/deleteMessage`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ chat_id: file.chatId || config.chat, message_id: part.messageId })
+                        });
+                    } catch (e) {}
+                }
+            } else if (file.messageId) {
+                try {
+                    await fetch(`https://api.telegram.org/bot${config.token}/deleteMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chat_id: file.chatId || config.chat, message_id: file.messageId })
                     });
-                    saveFiles(); renderFiles(); toast('Saved locally','info');
-                }
-            } finally { xhrUpload=null; setTimeout(()=>pnl.classList.remove('active'),1500); }
-        }
-
-        function cancelUpload() { if(xhrUpload){xhrUpload.abort();xhrUpload=null;} document.getElementById('uploadPanel').classList.remove('active'); }
-
-        async function downloadFile(id) {
-            const f=files.find(x=>x.id===id); if(!f) return;
-            if(f.storage==='local'&&f.localUrl){const a=document.createElement('a');a.href=f.localUrl;a.download=f.name;a.click();return;}
-            const c=getCfg(); if(!c.token) return toast('Configure bot','warning');
-            try {
-                const r=await fetch(`https://api.telegram.org/bot${c.token}/getFile?file_id=${id}`);
-                const d=await r.json();
-                if(d.ok) window.open(`https://api.telegram.org/file/bot${c.token}/${d.result.file_path}`,'_blank');
-                else throw new Error(d.description);
-            } catch(e) { toast(e.message,'error'); }
-        }
-
-        async function deleteFile(id) {
-            const i=files.findIndex(x=>x.id===id); if(i===-1) return;
-            if(!confirm(`Delete "${files[i].name}"?`)) return;
-            const f=files[i],c=getCfg();
-            if(f.storage==='cloud'&&f.messageId){
-                try{await fetch(`https://api.telegram.org/bot${c.token}/deleteMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:f.chatId||c.chat,message_id:f.messageId})})}catch(e){}
+                } catch (e) {}
             }
-            files.splice(i,1); saveFiles(); renderFiles(); toast('Deleted','success');
+
+            files.splice(idx, 1);
+            saveFiles();
+            renderFiles();
+            updateStats();
+            toast('Deleted', 'success');
         }
 
-        function renderFiles() {
-            const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
-            const fl=q?files.filter(f=>f.name.toLowerCase().includes(q)):files;
-            const ct=document.getElementById('filesContainer');
-            if(!fl.length){ct.innerHTML=`<div style="text-align:center;padding:60px;color:#64748b;"><i class="fas fa-folder-open" style="font-size:64px;opacity:0.2;display:block;margin-bottom:16px;"></i><p>${q?'No matches':'No files yet'}</p></div>`;return;}
-            ct.innerHTML=`<div class="files-grid">${fl.map(f=>f.isFolder?
-                `<div class="file-card"><div class="actions"><button class="icon-btn" onclick="event.stopPropagation();deleteFile('${f.id}')"><i class="fas fa-trash"></i></button></div><div class="icon" style="background:#ede9fe;color:#7c3aed;"><i class="fas fa-folder"></i></div><div class="name">${esc(f.name)}</div><div class="meta">Folder</div></div>`:
-                `<div class="file-card" ondblclick="downloadFile('${f.id}')"><div class="actions"><button class="icon-btn" onclick="event.stopPropagation();downloadFile('${f.id}')"><i class="fas fa-download"></i></button><button class="icon-btn" onclick="event.stopPropagation();deleteFile('${f.id}')"><i class="fas fa-trash"></i></button></div><div class="icon" style="background:${bg(f.type)};color:${cl(f.type)};"><i class="fas ${ic(f.type)}"></i></div><div class="name">${esc(f.name)}</div><div class="meta">${fmtSize(f.size)} • ${f.storage==='cloud'?'☁':'💾'}</div></div>`
-            ).join('')}</div>`;
+        // ============ HELPERS ============
+        function getFileCategory(file) {
+            const ext = (file.name.split('.').pop() || '').toLowerCase();
+            const mime = file.type.toLowerCase();
+            
+            if (mime.startsWith('video/') || ['mp4','avi','mkv','mov','wmv','flv','webm','m4v','3gp'].includes(ext)) {
+                return 'video';
+            }
+            if (mime.startsWith('image/') || ['jpg','jpeg','png','gif','bmp','webp','svg','ico'].includes(ext)) {
+                return 'image';
+            }
+            if (mime.startsWith('audio/') || ['mp3','wav','ogg','flac','aac','m4a'].includes(ext)) {
+                return 'audio';
+            }
+            if (['pdf','doc','docx','txt','xls','xlsx','ppt','pptx','csv'].includes(ext)) {
+                return 'document';
+            }
+            if (['zip','rar','7z','tar','gz','bz2'].includes(ext)) {
+                return 'archive';
+            }
+            return 'other';
         }
 
-        function getType(n){const e=(n.split('.').pop()||'').toLowerCase();const m={image:['jpg','jpeg','png','gif','webp','svg'],video:['mp4','avi','mkv','mov'],audio:['mp3','wav','ogg'],doc:['pdf','doc','docx','txt','xls','xlsx'],archive:['zip','rar','7z','tar']};for(const[t,x]of Object.entries(m))if(x.includes(e))return t;return'other';}
-        function bg(t){const m={image:'#dbeafe',video:'#fee2e2',audio:'#fef3c7',doc:'#d1fae5',archive:'#ede9fe'};return m[t]||'#f1f5f9';}
-        function cl(t){const m={image:'#3b82f6',video:'#ef4444',audio:'#f59e0b',doc:'#10b981',archive:'#7c3aed'};return m[t]||'#94a3b8';}
-        function ic(t){const m={image:'fa-file-image',video:'fa-file-video',audio:'fa-file-audio',doc:'fa-file-alt',archive:'fa-file-archive'};return m[t]||'fa-file';}
-        function fmtSize(b){if(!b)return'0 B';const u=['B','KB','MB','GB','TB'];const i=Math.floor(Math.log(b)/Math.log(1024));return parseFloat((b/Math.pow(1024,i)).toFixed(2))+' '+u[i];}
-        function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
-        function toast(m,t='info'){const icns={success:'fa-check-circle',error:'fa-exclamation-circle',warning:'fa-exclamation-triangle',info:'fa-info-circle'};const c=document.getElementById('toastContainer');const e=document.createElement('div');e.className=`toast toast-${t}`;e.innerHTML=`<i class="fas ${icns[t]}"></i> ${esc(m)}`;c.appendChild(e);setTimeout(()=>{e.style.opacity='0';e.style.transition='opacity 0.3s';setTimeout(()=>e.remove(),300)},3500);}
-
-        function updateStatus(color='', text='') {
-            const dot = document.getElementById('statusDot');
-            const txt = document.getElementById('statusText');
-            const c = getCfg();
-            if (c.token && c.chat) {
-                dot.className = 'dot ' + (color || 'green');
-                txt.textContent = text || 'Ready';
-            } else if (c.token) {
-                dot.className = 'dot yellow'; txt.textContent = 'Need Chat ID';
-            } else {
-                dot.className = 'dot red'; txt.textContent = 'Not configured';
+        function getUploadMethod(file, fileType) {
+            switch (fileType) {
+                case 'video':
+                    return { endpoint: 'sendVideo', field: 'video' };
+                case 'image':
+                    return { endpoint: 'sendDocument', field: 'document' };
+                case 'audio':
+                    return { endpoint: 'sendAudio', field: 'audio' };
+                case 'document':
+                case 'archive':
+                default:
+                    return { endpoint: 'sendDocument', field: 'document' };
             }
         }
 
-        function setupDnD() {
-            const z = document.getElementById('dropZone');
-            ['dragenter','dragover','dragleave','drop'].forEach(e=>{
-                z.addEventListener(e,ev=>ev.preventDefault());
-                document.addEventListener(e,ev=>ev.preventDefault());
+        function getFileEmoji(fileType) {
+            const emojis = {
+                video: '🎬',
+                image: '🖼️',
+                audio: '🎵',
+                document: '📄',
+                archive: '📦',
+                other: '📁'
+            };
+            return emojis[fileType] || '📁';
+        }
+
+        function getFileIdFromResult(result, field) {
+            return result[field]?.file_id || result.document?.file_id || result.video?.file_id || '';
+        }
+
+        function getFileSizeFromResult(result, field) {
+            return result[field]?.file_size || result.document?.file_size || result.video?.file_size || 0;
+        }
+
+        function saveLocally(file, fileType) {
+            files.unshift({
+                id: 'local_' + Date.now(),
+                uniqueId: 'local_' + Date.now(),
+                name: file.name,
+                size: file.size,
+                mime: file.type,
+                type: fileType,
+                date: new Date().toISOString(),
+                localUrl: URL.createObjectURL(file),
+                storage: 'local'
             });
-            ['dragenter','dragover'].forEach(e=>z.addEventListener(e,()=>z.classList.add('drag-over')));
-            ['dragleave','drop'].forEach(e=>z.addEventListener(e,()=>z.classList.remove('drag-over')));
-            z.addEventListener('drop',e=>{if(e.dataTransfer.files.length)upFiles(e.dataTransfer.files)});
-            z.addEventListener('click',()=>document.getElementById('fileInput').click());
+            saveFiles();
+            renderFiles();
+            updateStats();
+            toast('Saved locally', 'info');
         }
 
-        function triggerUpload() { document.getElementById('fileInput').click(); }
-        function handleFiles(e) { if(e.target.files.length) upFiles(e.target.files); e.target.value=''; }
+        function createFolder() {
+            const name = prompt('Folder name:');
+            if (!name?.trim()) return;
+            files.unshift({
+                id: 'folder_' + Date.now(),
+                name: name.trim(),
+                size: 0,
+                type: 'folder',
+                date: new Date().toISOString(),
+                isFolder: true,
+                storage: 'local'
+            });
+            saveFiles();
+            renderFiles();
+            updateStats();
+            toast('Folder created', 'success');
+        }
 
-        function upFiles(fl) {
-            const c = getCfg();
-            if (!c.token||!c.chat) return toast('Configure first. Try "Test with Saved Messages" for quick setup.','warning');
-            for(const f of fl) {
-                if(f.size>MAX_SIZE){toast(`${f.name} too large`,'error');continue;}
-                upload(f);
+        // ============ RENDER ============
+        function renderFiles() {
+            const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
+            const filtered = query ? files.filter(f => f.name.toLowerCase().includes(query)) : files;
+            const container = document.getElementById('filesContainer');
+
+            if (!filtered.length) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <h3>${query ? 'No matching files' : 'Your Drive is Empty'}</h3>
+                        <p>${query ? 'Try a different search.' : 'Upload videos, documents, and more!'}</p>
+                    </div>`;
+                return;
             }
+
+            container.innerHTML = `<div class="files-grid">${filtered.map(renderFileCard).join('')}</div>`;
         }
 
-        document.addEventListener('paste',e=>{for(const i of e.clipboardData?.items||[]){if(i.kind==='file'){upFiles([i.getAsFile()]);break;}}});
-        document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='u'){e.preventDefault();triggerUpload();}});
+        function renderFileCard(file) {
+            if (file.isFolder) {
+                return `
+                    <div class="file-card">
+                        <div class="file-actions">
+                            <button class="icon-btn danger" onclick="event.stopPropagation();deleteFile('${file.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                        <div class="file-icon" style="background:rgba(139,92,246,0.15);color:#a78bfa;">
+                            <i class="fas fa-folder"></i>
+                        </div>
+                        <div class="file-name">${esc(file.name)}</div>
+                        <div class="file-meta"><span>Folder</span></div>
+                    </div>`;
+            }
+
+            const isVideo = file.type === 'video';
+            const cardClass = isVideo ? 'video-file' : file.type === 'document' ? 'doc-file' : file.type === 'image' ? 'image-file' : '';
+            const iconBg = getIconBg(file.type);
+            const iconColor = getIconColor(file.type);
+            const icon = getIcon(file.type);
+            const typeLabel = file.isLargeFile ? 'LARGE' : file.type.toUpperCase();
+
+            return `
+                <div class="file-card ${cardClass}" ondblclick="downloadFile('${file.id}')">
+                    <span class="file-type-indicator ${file.type}">${typeLabel}</span>
+                    <div class="file-actions">
+                        ${isVideo ? `<button class="icon-btn play-btn" onclick="event.stopPropagation();streamVideo('${file.id}')" title="Stream"><i class="fas fa-play"></i></button>` : ''}
+                        <button class="icon-btn" onclick="event.stopPropagation();downloadFile('${file.id}')" title="Download"><i class="fas fa-download"></i></button>
+                        <button class="icon-btn danger" onclick="event.stopPropagation();deleteFile('${file.id}')" title="Delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <div class="file-icon" style="background:${iconBg};color:${iconColor};">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    <div class="file-name">${esc(file.name)}</div>
+                    <div class="file-meta">
+                        <span>${formatSize(file.size)}</span>
+                        <span>${file.storage === 'cloud' ? '☁' : '💾'}</span>
+                    </div>
+                </div>`;
+        }
+
+        function updateStats() {
+            const used = files.reduce((t, f) => t + (f.size || 0), 0);
+            document.getElementById('fileCount').textContent = files.length;
+            document.getElementById('storageUsed').textContent = formatSize(used);
+        }
+
+        function refreshFiles() {
+            loadFiles();
+            toast('Refreshed', 'info');
+        }
+
+        // ============ UTILITY ============
+        function getIconBg(type) {
+            const m = {
+                video: 'rgba(239,68,68,0.15)',
+                image: 'rgba(59,130,246,0.15)',
+                audio: 'rgba(245,158,11,0.15)',
+                document: 'rgba(16,185,129,0.15)',
+                archive: 'rgba(139,92,246,0.15)'
+            };
+            return m[type] || 'rgba(156,163,175,0.1)';
+        }
+
+        function getIconColor(type) {
+            const m = {
+                video: '#f87171',
+                image: '#60a5fa',
+                audio: '#fbbf24',
+                document: '#34d399',
+                archive: '#a78bfa'
+            };
+            return m[type] || '#9ca3af';
+        }
+
+        function getIcon(type) {
+            const m = {
+                video: 'fa-file-video',
+                image: 'fa-file-image',
+                audio: 'fa-file-audio',
+                document: 'fa-file-alt',
+                archive: 'fa-file-archive'
+            };
+            return m[type] || 'fa-file';
+        }
+
+        function formatSize(bytes) {
+            if (!bytes || bytes === 0) return '0 B';
+            const u = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + u[i];
+        }
+
+        function esc(str) {
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        }
+
+        function toast(msg, type = 'info') {
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            el.className = `toast toast-${type}`;
+            el.innerHTML = `<i class="fas ${icons[type]}"></i> ${esc(msg)}`;
+            container.appendChild(el);
+            setTimeout(() => {
+                el.style.opacity = '0';
+                el.style.transition = 'opacity 0.3s';
+                setTimeout(() => el.remove(), 300);
+            }, 4000);
+        }
+
+        function cancelUpload() {
+            if (xhrUpload) {
+                xhrUpload.abort();
+                xhrUpload = null;
+                toast('Upload cancelled', 'info');
+            }
+            document.getElementById('uploadOverlay').classList.remove('active');
+        }
+
+        // ============ EVENTS ============
+        document.addEventListener('paste', e => {
+            for (const item of e.clipboardData?.items || []) {
+                if (item.kind === 'file') {
+                    processFiles([item.getAsFile()]);
+                    break;
+                }
+            }
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey && e.key === 'u') { e.preventDefault(); triggerUpload(); }
+            if (e.ctrlKey && e.key === 'r') { e.preventDefault(); refreshFiles(); }
+        });
     </script>
 </body>
 </html>
